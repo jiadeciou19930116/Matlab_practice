@@ -1,34 +1,34 @@
 clear all
 %% Definition of Parameters
-N_2 = 2 ^ 8;                                        % number of sample points
-Delta_z_2 = 0.1;                                    % distance between sample points on z-domain
-Delta_kz_ = 2 * pi / (N_2 * Delta_z_2);             % distance between sample points on kz-domain
-M = linspace(1, N_2, N_2);                          % total range
-n_2 = linspace(1 , N_2/2 , N_2/2);                  % the first half-range 
-m_2 = linspace(N_2/2 + 1 , N_2 , N_2/2);            % the second half-range 
-psi_2 = linspace(0,0,N_2);
-z_2 = linspace(-Delta_z_2 * N_2 /2, Delta_z_2 * (N_2 /2 - 1), N_2); % range on z-domain
-kz_2 = z_2 / Delta_z_2 * Delta_kz_;                 % range on kz-domain
-psi_bar_2 = 0;
+N  = 2 ^ 8;                                        % number of sample points
+Delta_z  = 0.1;                                    % distance between sample points on z-domain
+Delta_kz_ = 2 * pi / (N  * Delta_z );             % distance between sample points on kz-domain
+M = linspace(1, N , N );                          % total range
+n = linspace(1 , N /2 , N /2);                  % the first half-range 
+m = linspace(N /2 + 1 , N  , N /2);            % the second half-range 
+psi = linspace(0,0,N );
+z = linspace(-Delta_z  * N  /2, Delta_z  * (N  /2 - 1), N ); % range on z-domain
+kz = z  / Delta_z  * Delta_kz_;                 % range on kz-domain
+psi_bar = 0;
 
 %% Define reference solution, it will use to compare our calculated result.
-psi_ti_FT_2 = 4 ./ (4 + kz_2 .^ 2);                 % Reference solution on kz-domain
+psi_ti_FT  = 4 ./ (4 + kz  .^ 2);                 % Reference solution on kz-domain
 
 %% Start calculation.
-psi_2 = build_test_sample(N_2, z_2);                % Init samples.
-psi_bar_2 = exec_half_swap(N_2,psi_2);              % Swap first half and second half data and save into psi_bar_2
+psi  = build_test_sample(N , z );                % Init samples.
+psi_bar  = exec_half_swap(N ,psi );              % Swap first half and second half data and save into psi_bar 
 
-psi_ti_FFT_2 = fft(psi_bar_2);                      % FFT
-psi_ti_dft_2 = Delta_z_2 .* fft(psi_bar_2);         % Gain
+psi_ti_FFT  = fft(psi_bar );                      % FFT
+psi_ti_dft  = Delta_z  .* fft(psi_bar );         % Gain
 
-psi_ti_DFT_2 = exec_half_swap(N_2,psi_ti_dft_2);    %Swap halfs and save into psi_ti_DFT_2
+psi_ti_DFT  = exec_half_swap(N ,psi_ti_dft );    %Swap halfs and save into psi_ti_DFT 
 
-Q_2 = abs(psi_ti_FT_2 - psi_ti_DFT_2);              %Calculate error, put into Q_2
+Q  = abs(psi_ti_FT  - psi_ti_DFT );              %Calculate error, put into Q 
 
 figure
-stem(kz_2, Q_2,'r','linewidth', 2);
+stem(kz , Q ,'r','linewidth', 2);
 xlabel('$k_z = m \Delta k_z$','fontsize',30,'interpreter','latex');  
-ylabel('$Q_2[m] = \left| \tilde{\psi}(m \Delta k_z) - \tilde{\psi}[m] \right|$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0  6*10^(-3)]);
+ylabel('$Q [m] = \left| \tilde{\psi}(m \Delta k_z) - \tilde{\psi}[m] \right|$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0  6*10^(-3)]);
 set(gca,'xtick',[-10 * pi : 2.5 * pi : 10 * pi],'fontsize',18);
 axis([-10 * pi, 10 * pi, 3 * 10 ^(-3), 6 * 10 ^(-3)]);
 
