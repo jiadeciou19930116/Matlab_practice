@@ -50,7 +50,7 @@ psi_rbb = zeros(Nr + 1, Nz);    % reflection wave, reflect at bottom firstly and
 
 %% Start calculation.
 
-psi(1, Nzr) = Normal_starter(zb, zs, zr, k0, qcr);
+psi(1, Nzr) = Gaussian_starter(zs, zr, k0);
 for nr = 1 : 1 : Nr
     theta_d = Propagate_Angle(zs, zr, (nr + 1) * delta_r);
     psi_d(nr + 1, Nzs) = PE_Tappert(psi(1, Nzs), 1, 0, k0, (nr + 1) * delta_r, theta_d);
@@ -69,10 +69,10 @@ for nr = 1 : 1 : Nr
         theta_rbs = Propagate_Angle(zs, ZBS, (nr + 1) * delta_r);
         theta_rbb = Propagate_Angle(zs, ZBB, (nr + 1) * delta_r);
         
-        psi_rss0 = Normal_starter(zb, zs, ZSS, k0, qcr);
-        psi_rsb0 = Normal_starter(zb, zs, ZSB, k0, qcr);
-        psi_rbs0 = Normal_starter(zb, zs, ZBS, k0, qcr);
-        psi_rbb0 = Normal_starter(zb, zs, ZBB, k0, qcr);
+        psi_rss0 = Gaussian_starter(zs, ZSS, k0);
+        psi_rsb0 = Gaussian_starter(zs, ZSB, k0);
+        psi_rbs0 = Gaussian_starter(zs, ZBS, k0);
+        psi_rbb0 = Gaussian_starter(zs, ZBB, k0);
         
         RSS = reflect_coe(c0, cb, rho0, rhob, theta_rss);
         RSB = reflect_coe(c0, cb, rho0, rhob, theta_rsb);
@@ -82,7 +82,7 @@ for nr = 1 : 1 : Nr
         psi_rss(nr + 1, Nzs) = psi_rss(nr + 1, Nzs) ...
             + PE_Tappert(psi_rss0, RSS, xi, k0, (nr + 1) * delta_r, theta_rss);
         psi_rsb(nr + 1, Nzs) = psi_rsb(nr + 1, Nzs) ...
-            + PE_Tappert(psi_rbs0, RSB, xi, k0, (nr + 1) * delta_r, theta_rsb);
+            + PE_Tappert(psi_rsb0, RSB, xi, k0, (nr + 1) * delta_r, theta_rsb);
         psi_rbs(nr + 1, Nzs) = psi_rbs(nr + 1, Nzs) ...
             + PE_Tappert(psi_rbs0, RBS, xi, k0, (nr + 1) * delta_r, theta_rbs);
         psi_rbb(nr + 1, Nzs) = psi_rbb(nr + 1, Nzs) ...
@@ -96,7 +96,7 @@ TLd(:) = -20 * log(abs(psi_d(:, Nzr)) ./ sqrt(r(:)));
 
 
 %% Show the result
-plot(r/1000, TLd);
+plot(r/1000, TL);
 
 
 %% Sub functions define.
@@ -105,9 +105,9 @@ if Reflction_type == 1                                              %% reflction
     Z = - ZR - Reflection_times * ZB;
 elseif Reflction_type == 2                                          %% reflction wave, firstly reflect at surface and bottom lastly at surface
     Z =  ZR - (Reflection_times + 0.5)* ZB;
-    elseif Reflction_type == 3                                          %% reflction wave, firstly reflect at bottom and surface lastly at surface
+    elseif Reflction_type == 3                                      %% reflction wave, firstly reflect at bottom and surface lastly at surface
         Z = ZR + (Reflection_times + 0.5) * ZB;
-else%if Reflction_type == 4                                          %% reflction wave, firstly reflect at bottom and bottom lastly at surface
+else%if Reflction_type == 4                                         %% reflction wave, firstly reflect at bottom and bottom lastly at surface
             Z = -ZR + (Reflection_times + 1) * ZB;
 end
 end
@@ -117,6 +117,11 @@ function Theta = Propagate_Angle(ZS, ZR, Distance)
 Theta = atan((ZR - ZS) / Distance);
 end
 
+function source = Gaussian_starter(ZS, ZR, K0)
+source = sqrt(K0) * exp(- K0^2 * (ZR - ZS)^2 / 2);
+end
+
+%{
 function source = Normal_starter(ZB, ZS, ZR, K0, summation_limit)
 source = 0;
     for q = 1 : 1  : summation_limit                              % definition of the start field
@@ -125,17 +130,7 @@ source = 0;
         source = source + sqrt(2 * pi) * 2 / ZB * sin(Kqz * ZS) * sin(Kqz * ZR) / sqrt(Kqr);
     end
 end
-
-
-function source = Normal_starter(ZB, ZS, ZR, K0, summation_limit)
-source = 0;
-    for q = 1 : 1  : summation_limit                              % definition of the start field
-        Kqz = (q - 0.5) * pi / ZB;
-        Kqr = sqrt(K0 ^ 2 - Kqz ^ 2);
-        source = source + sqrt(2 * pi) * 2 / ZB * sin(Kqz * ZS) * sin(Kqz * ZR) / sqrt(Kqr);
-    end
-end
-
+%}
 
 function R = reflect_coe(C1, C2, RHO1, RHO2, Theta_R)
 Theta_T = acos(C2 * cos(Theta_R) / C1);
