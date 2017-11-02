@@ -1,15 +1,42 @@
 clear all
 %% Definition of Parameters
-zs = 99.5;                      % depth of source, unit is m
-zr = 99.5;                      % depth of receiver, unit is m
-zb = 100;                       % depth of bottom, unit is m
+zs = 99.5;                      
+zr = 99.5;                      
+zb = 100;                       
 % depth of source, receiver and bottom of the water body, unit is m.
-delta_z = 0.5;
-Nz = zb / delta_z;
-z = linspace(delta_z, zb, Nz);
+
+delta_z = 0.5;          % distance between continuous sample point on z-direction, unit is m.
+Nz = zb / delta_z;      % the number of sample point for one colume (on z-axis)
+z = linspace(delta_z, zb, Nz);  % depth of each sample poins on one colume
+% set about sample point on one colume
+
+rmax = 10 * 1000;       % The maximun of harizotal distance
+delta_r = 50;           % distance between continuous sample point on r-direction, unit is m.
+Nr = rmax / delta_r;    % number of sample points on one row, without r = 0;
+r = linspace(0, rmax, Nr + 1);  % location of each sample point on one row
+% set about sample point on one row
+
+f = 250;                % frequency of the signal
+c0 = 1500;              % speed in water
+cb = 1590;              % speed at bottom
+k0 = 2 * pi * f / c0;   % wave number in water
+%   information about the signal
+
+rho0 = 1000;            % mass density of water, kg / m^3
+rhob = 1200;            % mass density of bottom, kg / m^3
+%   information about the enviroment
+
+%% Declare the equations
+
+psi = zeros(Nr + 1, Nz);        % total acoustic wave, summation of other five kinds wave
+psi_d = zeros(Nr + 1, Nz);      % direction wave
+psi_rss = zeros(Nr + 1, Nz);    % reflection wave, reflect at sea surface firstly and lastly
+psi_rsb = zeros(Nr + 1, Nz);    % reflection wave, reflect at sea surface firstly and bottom lastly
+psi_rbs = zeros(Nr + 1, Nz);    % reflection wave, reflect at bottom firstly and sea surface lastly
+psi_rbb = zeros(Nr + 1, Nz);    % reflection wave, reflect at bottom firstly and lastly
 
 %% Define reference solution, it will use to compare our calculated result.
-
+%   None
 
 %% Start calculation.
 
@@ -19,108 +46,16 @@ z = linspace(delta_z, zb, Nz);
 
 
 %% Sub functions define.
-function samples = build_test_sample(N, z)
-samples = [N, 1];
-for r = 1 : 1  : N                              % definition of the original equation
-    if r < 65
-        samples(r) = 0;
-    elseif r > 192
-        samples(r) = 0;
-    else
-        samples(r) = exp(- 2 * abs(z(r)));
-    end
-end
-end
-
-function ret = exec_half_swap(N, data)
-    ret = [N,1];
-    for r = 1 : 1  : N                                % move and exchange part-to-part in kz-domain
-        if r < N/2 + 1
-            ret(r) = data(r + N / 2);
-        else
-            ret(r) = data(r - N / 2);
-        end
+function source = Normal_starter(ZB, ZS, ZR, K0, summation_limit)
+source = 0;
+    for q = 1 : 1  : summation_limit                              % definition of the start field
+        Kqz = (q - 0.5) * pi / ZB;
+        Kqr = sqrt(K0 ^ 2 - Kqz ^ 2);
+        source = source + sqrt(2 * pi) * 2 / ZB * sin(Kqz * ZS) * sin(Kqz * ZR) / sqrt(Kqr);
     end
 end
 
-%{
-figure
-plot(z , psi,'b','linewidth',2);
-xlabel('$z$','fontsize',30,'interpreter','latex');  
-ylabel('$\psi(z)$','fontsize',30,'interpreter','latex','Rotation',0,'position',[-12.8 1]);
-set(gca,'xtick',[-12.8 : 1.6: 12.8],'fontsize',18);
-axis([-12.8, 12.8, 0, 1]);
+function acoustic_wave = PE_Tappert( ,K0, R, Theta_R, Reflection_times)
+    acoustic_wave = 0;
+end
 
-
-figure
-stem(n - 1 - N / 2, psi(n),'r','linewidth', 2);
-hold on
-stem(m - 1 - N / 2, psi(m),'b','linewidth', 2);
-xlabel('$n$','fontsize',30,'interpreter','latex');  
-ylabel('$\psi[n]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[-128 1]);
-set(gca,'xtick',[-128 : 16: 128],'fontsize',18);
-axis([-128, 128, 0, 1]);
-
-
-figure
-stem(n - 1, psi_bar(n),'b','linewidth', 2);
-hold on
-stem(m - 1, psi_bar(m),'r','linewidth', 2);
-xlabel('$n$','fontsize',30,'interpreter','latex');  
-ylabel('$\bar{\psi}[n]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0 1]);
-set(gca,'xtick',[0 : 16: 256],'fontsize',18);
-axis([0, 256, 0, 1.02]);
-
-
-figure
-stem(n, psi_bar(n),'b','linewidth', 2);
-hold on
-stem(m , psi_bar(m),'r','linewidth', 2);
-xlabel('$n$','fontsize',30,'interpreter','latex');  
-ylabel('$\phi[n]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0 1]);
-set(gca,'xtick',[0 : 16: 256],'fontsize',18);
-axis([0, 256, 0, 1.02]);
-
-
-figure
-stem(n , psi_ti_FFT(n),'b','linewidth', 2);
-hold on
-stem(m , psi_ti_FFT(m),'r','linewidth', 2);
-xlabel('$m$','fontsize',30,'interpreter','latex');  
-ylabel('$\tilde{\phi}_{FFT}[m]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0 10.2]);
-set(gca,'xtick',[0 : 16: 256],'fontsize',18);
-axis([0, 256, 0, 10.2]);
-
-
-
-figure
-stem(n - 1, psi_ti_FFT(n),'b','linewidth', 2);
-hold on
-stem(m - 1, psi_ti_FFT(m),'r','linewidth', 2);
-xlabel('$m$','fontsize',30,'interpreter','latex');  
-ylabel('$\tilde{\psi}_S[m]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[0 10.2]);
-set(gca,'xtick',[0 : 16: 256],'fontsize',18);
-axis([0, 256, 0, 10.2]);
-
-
-figure
-stem(n - N / 2 - 1, psi_ti_DFT(n), 'r','linewidth', 2);
-hold on
-stem(m - N / 2 - 1, psi_ti_DFT(m),'b','linewidth', 2);
-xlabel('$m$','fontsize',30,'interpreter','latex');  
-ylabel('$\tilde{\psi}[m]$','fontsize',30,'interpreter','latex','Rotation',0,'position',[-128 1]);  
-set(gca,'xtick',[-128 : 16: 128],'fontsize',18);
-axis([-128, 128, 0, 1.02]);
-
-
-figure
-plot(kz, psi_ti_FT,'b','linewidth', 2);
-hold on
-stem(kz, psi_ti_DFT,'r');
-xlabel('$k_z = m \Delta k_z$','fontsize',30,'interpreter','latex');  
-le = legend('$\tilde{\psi}(k_z)$','$\tilde{\psi}[m]$');
-set(le,'interpreter','latex','fontsize',30);
-%ylabel('$\tilde{\psi}(k_z)$','fontsize',30,'interpreter','latex','Rotation',0,'position',[-31.4 1]);
-set(gca,'xtick',[-31.4 : 31.4 / 4 : 31.4],'fontsize',18);
-axis([- 10 * pi, 10 * pi, 0, 1]);
-%}
