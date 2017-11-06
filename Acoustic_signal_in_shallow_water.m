@@ -5,7 +5,7 @@ zr = 99.5;
 zb = 100;
 % depth of source, receiver and bottom of the water body, unit is m.
 
-delta_z = 0.05;          % distance between continuous sample point on z-direction, unit is m.
+delta_z = 0.5;          % distance between continuous sample point on z-direction, unit is m.
 Nz = zb / delta_z;      % the number of sample point for one colume (on z-axis)
 z = linspace(delta_z, zb, Nz);  % depth of each sample poins on one colume
 Nzr = zr / delta_z;
@@ -28,6 +28,7 @@ rho0 = 1000;            % mass density of water, kg / m^3
 rhob = 1200;            % mass density of bottom, kg / m^3
 %   information about the enviroment
 
+XI = 150;
 qcr = 0.5 + 2 * f * zb / c0; % limitation of normal-mode summation
 R_cr = 0.001; 
 RSS = 1;
@@ -41,9 +42,7 @@ RBB = 4;
 psi = zeros(Nr + 1, Nz);        % total acoustic wave, summation of other five kinds wave
 psi_d = zeros(Nr + 1, Nz);      % direction wave
 psi_rss = zeros(Nr + 1, Nz);    % reflection wave, reflect at sea surface firstly and lastly
-psi_rsb = zeros(Nr + 1, Nz);    % reflection wave, reflect at sea surface firstly and bottom lastly
-psi_rbs = zeros(Nr + 1, Nz);    % reflection wave, reflect at bottom firstly and sea surface lastly
-psi_rbb = zeros(Nr + 1, Nz);    % reflection wave, reflect at bottom firstly and lastly
+
 
 %% Define reference transmission loss, it will use to compare our calculated result.
 theta = atan((zs - zr) / 1);
@@ -53,46 +52,27 @@ psi_ref = Normal_starter(zb, zs, zr, k0, qcr) * exp(1i * k0 * 1 * X / 2);
 %% Start calculation.
 
 psi(1, Nzr) = Normal_starter(zb, zs, zr, k0, qcr);
+psi_d = psi;
+psi_rss = psi;
 for nr = 1 : 1 : Nr
     theta_d = Propagate_Angle(zs, zr, (nr + 1) * delta_r);
-    psi_d(nr + 1, Nzs) = PE_Tappert(psi(1, Nzs), 1, 0, k0, (nr + 1) * delta_r, theta_d);
+    psi_d(nr + 1, Nzs) = PE_Cleabort(psi_d(nr, Nzs), 1, 0, k0, delta_r, theta_d);
     
     Z = Image_depth(zb, zr, 0, RSS);
     theta_rss = Propagate_Angle(zs, Z, (nr + 1) * delta_r);
-    psi_rss(nr + 1, Nzs) = PE_Tappert(psi(1, Nzs), 1, 0, k0, (nr + 1) * delta_r, theta_d);
-    for xi = 1 : 1 : 500
-        ZSS = Image_depth(zb, zr, xi, RSS);
-        ZSB = Image_depth(zb, zr, xi, RSB);
-        ZBS = Image_depth(zb, zr, xi, RBS);
-        ZBB = Image_depth(zb, zr, xi, RBB);
-        
-        theta_rss = Propagate_Angle(zs, ZSS, (nr + 1) * delta_r);
-        theta_rsb = Propagate_Angle(zs, ZSB, (nr + 1) * delta_r);
-        theta_rbs = Propagate_Angle(zs, ZBS, (nr + 1) * delta_r);
-        theta_rbb = Propagate_Angle(zs, ZBB, (nr + 1) * delta_r);
-        
-        psi_rss0 = psi(1, Nzr);% Normal_starter(zb, zs, ZSS, k0, qcr);
-        psi_rsb0 = psi(1, Nzr);% Normal_starter(zb, zs, ZSB, k0, qcr);
-        psi_rbs0 = psi(1, Nzr);% Normal_starter(zb, zs, ZBS, k0, qcr);
-        psi_rbb0 = psi(1, Nzr);% Normal_starter(zb, zs, ZBB, k0, qcr);
-        
+    psi_rss(nr + 1, Nzs) = PE_Cleabort(psi(1, Nzs), 1, 0, k0, (nr + 1) * delta_r, theta_rss);
+    
+    for xi = 1 : 1 : XI
+        ZSS = Image_depth(zb, zr, xi, RSS);        
+        theta_rss = Propagate_Angle(zs, ZSS, (nr + 1) * delta_r);       
+        psi_rss0 = psi(1, Nzr);% Normal_starter(zb, zs, ZSS, k0, qcr);        
         RSS = reflect_coe(c0, cb, rho0, rhob, theta_rss);
-        RSB = reflect_coe(c0, cb, rho0, rhob, theta_rsb);
-        RBS = reflect_coe(c0, cb, rho0, rhob, theta_rbs);
-        RBB = reflect_coe(c0, cb, rho0, rhob, theta_rbb);
-        
         psi_rss(nr + 1, Nzs) = psi_rss(nr + 1, Nzs) ...
-            + PE_Tappert(psi_rss0, RSS, xi, k0, (nr + 1) * delta_r, theta_rss);
-        psi_rsb(nr + 1, Nzs) = psi_rsb(nr + 1, Nzs) ...
-            + PE_Tappert(psi_rbs0, RSB, xi, k0, (nr + 1) * delta_r, theta_rsb);
-        psi_rbs(nr + 1, Nzs) = psi_rbs(nr + 1, Nzs) ...
-            + PE_Tappert(psi_rbs0, RBS, xi, k0, (nr + 1) * delta_r, theta_rbs);
-        psi_rbb(nr + 1, Nzs) = psi_rbb(nr + 1, Nzs) ...
-            + PE_Tappert(psi_rbb0, RBB, xi, k0, (nr + 1) * delta_r, theta_rbb);
+            + PE_Cleabort(psi_rss0, RSS, xi, k0, (nr + 1) * delta_r, theta_rss);
     end
 end
 
-%psi = psi_d + psi_rss + psi_rsb + psi_rbs + psi_rbb + psi;
+
 psi = psi_d  + psi_rss + psi;
 TL(:) = -20 * log(abs(psi(:, Nzr)) ./ sqrt(r(:)) / abs(psi_ref));
 TLd(:) = -10 * log(abs(psi_d(:, Nzr)).^2 ./ sqrt(r(:)));
@@ -108,6 +88,8 @@ ylabel('loss (dB)');
 set(gca,'fontsize', 20,'ydir','reverse');
 axis([5, 10, -inf, inf]);
 
+%figure
+%plot(r(:), abs(psi_rss(:, Nzr)) ./ sqrt(r(:)) );
 
 %% Sub functions define.
 function Z = Image_depth(ZB, ZR, Reflection_times, Reflction_type)
@@ -153,8 +135,8 @@ Z2 = RHO2 * C2 / sin(Theta_T);
 R = (Z2 - Z1) / (Z2 + Z1);
 end
 
-function acoustic_wave = PE_Tappert(SOURCE, Reflect_Coe, Reflection_times, K0, Distance, Theta)
+function acoustic_wave = PE_Cleabort(SOURCE, Reflect_Coe, Reflection_times, K0, Distance, Theta)
 X = - sin(Theta) ^ 2;
-acoustic_wave = SOURCE * Reflect_Coe ^ Reflection_times * exp(1i * K0 * Distance * X / 2);
+acoustic_wave = SOURCE * Reflect_Coe ^ Reflection_times * exp(1i * K0 * Distance * X / 2 / (1 + 0.25 * X));
 end
 
