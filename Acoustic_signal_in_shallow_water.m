@@ -76,7 +76,7 @@ end
 
 psi = psi_d  + psi_rss + psi;
 TL(:) = -20 * log(abs(psi(:, Nzr)) ./ sqrt(r(:)) / abs(psi_ref));
-TLd(:) = -10 * log(abs(psi_d(:, Nzr)).^2 ./ sqrt(r(:)));
+TLd(:) = -20 * log(abs(psi_d(:, Nzr)) ./ sqrt(r(:)));
 
 
 %% Show the result
