@@ -21,11 +21,13 @@ r = linspace(0, rmax, Nr + 1);  % location of each sample point on one row
 f = 250;                % frequency of the signal
 c0 = 1500;              % speed in water
 cb = 1590;              % speed at bottom
+ca = 340.29;
 k0 = 2 * pi * f / c0;   % wave number in water
 %   information about the signal
 
 rho0 = 1000;            % mass density of water, kg / m^3
 rhob = 1200;            % mass density of bottom, kg / m^3
+rhoa = 1.293 * 10 ^ (-3);
 %   information about the enviroment
 
 qcr = 0.5 + 2 * f * zb / c0; % limitation of normal-mode summation
@@ -44,16 +46,6 @@ psi_b = linspace(0,0,Nr + 1);    % reflection wave, reflect at sea surface first
 psi_bs = linspace(0,0,Nr + 1);    % reflection wave, reflect at sea surface firstly and bottom lastly
 psi_sb = linspace(0,0,Nr + 1);
 
-theta_d = linspace(0,0,Nr + 1);      % direction wave
-theta_s = linspace(0,0,Nr + 1); 
-theta_b = linspace(0,0,Nr + 1);    % reflection wave, reflect at sea surface firstly and lastly
-theta_bs = linspace(0,0,Nr + 1);
-theta_sb = linspace(0,0,Nr + 1);
-
-Rs = linspace(0,0,Nr + 1);    % reflection wave, reflect at sea surface firstly and lastly
-Rb = linspace(0,0,Nr + 1);    % reflection wave, reflect at sea surface firstly and lastly
-Rbs = linspace(0,0,Nr + 1);
-Rsb = linspace(0,0,Nr + 1);
 
 
 %% Define reference transmission loss, it will use to compare our calculated result.
@@ -67,29 +59,40 @@ psi(1) = Gaussian_starter(zs, zr, k0);
 psi_bs(1) = Gaussian_starter(-2 * zb + zs, zr, k0);
 psi_s(1) = Gaussian_starter(-zs, zr, k0);
 for nr = 1 : 1 : Nr
-    theta_d(nr + 1) = Propagate_Angle(zs, zr, nr * delta_r);
-    psi_d(nr + 1) = PE_Tappert(psi(1), 1,  k0, nr * delta_r, theta_d(nr + 1));
+    theta_d = Propagate_Angle(zs, zr, nr * delta_r);
+    psi_d(nr + 1) = PE_Tappert(psi(1), 1,  k0, nr * delta_r, theta_d);
     
-    theta_s(nr + 1) = Propagate_Angle(-zs, zr, nr * delta_r);
-    psi_s(nr + 1 ) =  PE_Tappert(psi(1), 1, k0, nr * delta_r, theta_s(nr + 1));
+ %   R = reflect_coe(C1, C2, RHO1, RHO2, Theta_R)
+ %   acoustic_wave = PE_Tappert(SOURCE, RB, RS, Reflect_pair, K0, Distance, Theta)
+ %   Theta = Propagate_Angle(ZS, ZR, Distance)
+    for xi = 0 : 1 : XI
+        theta_s = Propagate_Angle(zs + 2 * xi * zb, -zr, nr * delta_r);
+        Rsa = reflect_coe(c0, ca, rho0, rhoa, theta_s);
+        Rsb = reflect_coe(c0, cb, rho0, rhob, theta_s);
+        psi_s(nr + 1) = psi_s(nr + 1) + PE_Tappert(psi(1), Rsb, Rsa, xi, k0, nr * delta_r, theta_s);
     
-    theta_b(nr + 1) = Propagate_Angle(2 * zb - zs, zr, nr  * delta_r);
-    Rb(nr + 1) = reflect_coe(c0, cb, rho0, rhob, theta_b(nr + 1));
-    psi_b(nr + 1 ) = PE_Tappert(psi(1), Rb(nr + 1), k0, nr * delta_r, theta_b(nr + 1));
+        theta_b = Propagate_Angle(zs + 2 * (xi + 1) * zb, zr, nr  * delta_r);
+        Rba = reflect_coe(c0, ca, rho0, rhoa, theta_b);
+        Rbb = reflect_coe(c0, cb, rho0, rhob, theta_b);
+        psi_b(nr + 1) = psi_b(nr + 1) + PE_Tappert(psi(1), Rbb, Rba, xi, k0, nr * delta_r, theta_b);
     
-    theta_bs(nr + 1) = Propagate_Angle(-2 * zb + zs, zr, nr  * delta_r);
-    Rbs(nr + 1) = reflect_coe(c0, cb, rho0, rhob, theta_bs(nr + 1));
-    psi_bs(nr + 1) = PE_Tappert(psi(1), Rbs(nr + 1), k0, nr * delta_r, theta_bs(nr + 1));
+        theta_bs = Propagate_Angle(-2 * (xi + 0.5) * zb + zs, zr, nr  * delta_r);
+        Rba = reflect_coe(c0, ca, rho0, rhoa, theta_bs);
+        Rbb = reflect_coe(c0, cb, rho0, rhob, theta_bs);
+        psi_bs(nr + 1) = psi_bs(nr + 1) + PE_Tappert(psi(1), Rbsb, Rbsa, xi, k0, nr * delta_r, theta_bs);
+    
+        theta_sb = Propagate_Angle(-(zs + zb), zr, nr  * delta_r);
+        Rsb(nr + 1) = reflect_coe(c0, cb, rho0, rhob, theta_sb);
+        psi_sb(nr + 1) = PE_Tappert(psi(1), Rbsb, Rbsa, xi, k0, nr * delta_r, theta_sb);
+    end
 end
 
-psi = psi + psi_d + psi_s;%+ psi_b + psi_bs 
-TL(:) = -20 * log(abs(psi(: )) ./ sqrt(r(:)) / abs(psi_ref));
+psi = psi + psi_d + psi_s + psi_b + psi_bs + psi_sb; 
+TL(:) = -20 * log(abs(psi(:)) ./ sqrt(r(:)) / abs(psi_ref));
 
 
 
 %% Show the result
-figure
-plot(r/1000, TL,'LineWidth',1.5);
 
 figure
 plot(r/1000, TL,'LineWidth',1.5);
@@ -98,13 +101,13 @@ grid on
 xlabel('Range(km)');  
 ylabel('loss (dB)');
 set(gca,'fontsize', 20,'ydir','reverse');
-axis([5, 10, 50, 120]);
+axis([5, 10, 60, 150]);
 
 
 %% Sub functions define.
 
 function Theta = Propagate_Angle(ZS, ZR, Distance)
-Theta = abs(atan((ZR - ZS) / Distance));
+Theta = atan((ZR - ZS) / Distance);
 end
 
 %{
@@ -119,7 +122,7 @@ end
 %}
 
 function source = Gaussian_starter(ZS, ZR, K0)
-source =  sqrt(K0) * exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 1) ;
+source =  sqrt(K0) * (exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 2) - exp(- K0 ^ 2 / 2 * (ZR + ZS) ^ 2)) ;
 end
 
 
@@ -134,7 +137,7 @@ else
 end
 end
 
-function acoustic_wave = PE_Tappert(SOURCE, Reflect_Coe, K0, Distance, Theta)
+function acoustic_wave = PE_Tappert(SOURCE, RB, RS, Reflect_pair, K0, Distance, Theta)
 X = - sin(Theta) ^ 2;
-acoustic_wave = SOURCE * Reflect_Coe * exp(1i * K0 * Distance * X / 2);
+acoustic_wave = SOURCE * (RB * RS) ^ Reflect_pair * exp(1i * K0 * Distance * X / 2);
 end
