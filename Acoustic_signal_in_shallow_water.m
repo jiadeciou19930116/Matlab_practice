@@ -80,9 +80,13 @@ for nr = 1 : 1 : Nr
     theta_bs(nr + 1) = Propagate_Angle(-2 * zb + zs, zr, nr  * delta_r);
     Rbs(nr + 1) = reflect_coe(c0, cb, rho0, rhob, theta_bs(nr + 1));
     psi_bs(nr + 1) = PE_Tappert(psi(1), Rbs(nr + 1), k0, nr * delta_r, theta_bs(nr + 1));
+    
+    theta_sb(nr + 1) = Propagate_Angle(-(zs + zb), zr, nr  * delta_r);
+    Rsb(nr + 1) = reflect_coe(c0, cb, rho0, rhob, theta_sb(nr + 1));
+    psi_sb(nr + 1) = PE_Tappert(psi(1), Rsb(nr + 1), k0, nr * delta_r, theta_sb(nr + 1));
 end
 
-psi = psi + psi_d + psi_b + psi_bs + psi_s;
+psi = psi + psi_d + psi_s + psi_b + psi_bs + psi_sb; 
 TL(:) = -20 * log(abs(psi(: )) ./ sqrt(r(:)) / abs(psi_ref));
 
 
@@ -96,7 +100,7 @@ grid on
 xlabel('Range(km)');  
 ylabel('loss (dB)');
 set(gca,'fontsize', 20,'ydir','reverse');
-axis([0, 5, 40, 90]);
+axis([5, 10, 60, 150]);
 
 
 %% Sub functions define.
@@ -117,7 +121,7 @@ end
 %}
 
 function source = Gaussian_starter(ZS, ZR, K0)
-source =  sqrt(K0) * exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 1) ;
+source =  sqrt(K0) * (exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 2) - exp(- K0 ^ 2 / 2 * (ZR + ZS) ^ 2)) ;
 end
 
 
