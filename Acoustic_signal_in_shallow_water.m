@@ -13,7 +13,7 @@ Nzs = zs / delta_z;
 % set about sample point on one colume
 
 rmax = 10 * 1000;       % The maximun of harizotal distance
-delta_r = 50;           % distance between continuous sample point on r-direction, unit is m.
+delta_r = 1;           % distance between continuous sample point on r-direction, unit is m.
 Nr = rmax / delta_r;    % number of sample points on one row, without r = 0;
 r = linspace(0, rmax, Nr + 1);  % location of each sample point on one row
 % set about sample point on one row
@@ -129,7 +129,7 @@ end
 psi_t = psi_t + psi_t_d + psi_t_s + psi_t_b + psi_t_bs + psi_t_sb;%; 
 TLt(:) = -20 * log(abs(psi_t(:))  ./ sqrt(r(:)) / abs(psi_ref));
 
-psi_c = psi_c + psi_c_d + psi_c_s + psi_c_b + psi_c_bs + psi_c_sb;%; 
+psi_c = psi_c + psi_c_d + psi_c_s + psi_c_b + psi_c_bs + psi_c_sb; 
 TLc(:) = -20 * log(abs(psi_c(:))  ./ sqrt(r(:)) / abs(psi_ref));
 
 %% Show the result
