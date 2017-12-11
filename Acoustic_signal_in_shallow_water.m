@@ -33,7 +33,7 @@ rhoa = 1.293 * 10 ^ (-3);
 qcr = 0.5 + 2 * f * zb / c0; % limitation of normal-mode summation
 R_cr = 0.001; 
 
-XI = 100;
+XI = 5;
 
 %% Declare the equations
 
@@ -135,15 +135,11 @@ TLc(:) = -20 * log(abs(psi_c(:))  ./ sqrt(r(:)) / abs(psi_ref));
 %% Show the result
 
 figure
-plot(r/1000, TLt,r/1000, TLc,'LineWidth',1.5);
-xlabel('Range(km)');  
-ylabel('loss (dB)');
-set(gca,'fontsize', 30,'ydir','reverse');
-lenged('Standart PE', 'Wide-angle PE')
-hold on
-grid on
-axis([5, 10, -inf, inf]);
-
+plot(r/1000, TLt,r/1000, TLc,'LineWidth',2);
+xlabel('Range (km)');  
+ylabel('Loss (dB)');
+set(gca,'fontsize', 34,'ydir','reverse');
+axis([5, 10, 0, 100]);
 
 %% Sub functions define.
 

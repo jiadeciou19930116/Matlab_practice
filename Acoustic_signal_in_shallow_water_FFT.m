@@ -37,7 +37,7 @@ rhob = 1200;            % mass density of bottom, kg / m^3
 rhoa = 1.293 * 10 ^ (-3);
 %   information about the enviroment
 
-XI = 100;
+XI = 1;
 
 
 %% Declare the equations
@@ -62,7 +62,7 @@ TL_4 = zeros(N, Nr + 1);
 psi_ref = 0.760687837319143 - 0.379130679521243 * 1i;
  % Gaussian_starter(ZS, ZR, K0, THETA_R, THETA_B)
  for nz = 1 : 1 : N
-     psi(nz, 1) = Gaussian_starter(zs, nz * delta_z, k0) -  Gaussian_starter(-zs, nz * delta_z, k0) ;
+     psi(nz, 1) = Gaussian_starter(zs, nz * delta_z, k0) +  Gaussian_starter(-zs, nz * delta_z, k0) ;
  end
 for nz = 1 : 1 : N
         if nz > zb
@@ -94,6 +94,7 @@ end
 figure
 Fig1 = pcolor(TL_1);
 set(Fig1,'edgecolor','none');
+set(gca,'fontsize', 30,'ydir','reverse');
 colormap jet;
 
 figure
@@ -104,7 +105,7 @@ set(gca,'fontsize', 30,'ydir','reverse');
 %lenged('Standart PE', 'Wide-angle PE')
 hold on
 grid on
-axis([5, 10, -inf, inf]);
+axis([5, 10, 0, 100]);
 %{
 figure
 plot(r/1000, TL,'r', r/1000, TL_c,'b', 'LineWidth',1.5);
