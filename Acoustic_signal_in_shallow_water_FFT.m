@@ -19,7 +19,7 @@ Nzs = zs / delta_z;
 % set about sample point on one colume
 
 rmax = 10 * 1000;       % The maximun of harizotal distance
-delta_r = 50;           % distance between continuous sample point on r-direction, unit is m.
+delta_r = 25;           % distance between continuous sample point on r-direction, unit is m.
 Nr = rmax / delta_r;    % number of sample points on one row, without r = 0;
 r = linspace(0, rmax, Nr + 1);  % location of each sample point on one row
 % set about sample point on one row
@@ -62,7 +62,7 @@ TL_4 = zeros(N, Nr + 1);
 psi_ref = 0.760687837319143 - 0.379130679521243 * 1i;
  % Gaussian_starter(ZS, ZR, K0, THETA_R, THETA_B)
  for nz = 1 : 1 : N
-     psi(nz, 1) = Gaussian_starter(zs, nz * delta_z, k0) +  Gaussian_starter(-zs, nz * delta_z, k0) ;
+     psi(nz, 1) = Gaussian_starter(zs, nz * delta_z, k0) +  Gaussian_starter(2 *zb - zs, nz * delta_z, k0) ;
  end
 for nz = 1 : 1 : N
         if nz > zb
@@ -94,17 +94,24 @@ end
 figure
 Fig1 = pcolor(TL_1);
 set(Fig1,'edgecolor','none');
-set(gca,'fontsize', 30,'ydir','reverse');
+set(gca,'fontsize', 32,'ydir','reverse');
+xlabel('Range (km)');  
+ylabel('Depth (m)');
+caxis([25 60]);
+colorbar('fontsize', 32,'Ticks',[30,35,40,45,50,55],...
+    'TickLabels',{'30','35','40','45','50','55'});
+h=colorbar;
+set(get(h,'title'),'string','dB');
 colormap jet;
+%set(gca,'xtick',[0 :20:200]);
+%set(gca,'ytick',[0 :50:200]);
+axis([1, 1000 / delta_r, 1, 200]);
 
 figure
-Fig2 = plot(r(:)/1000,TL_1(Nzr, :),'LineWidth',1.5);
-xlabel('Range(km)');  
-ylabel('loss (dB)');
-set(gca,'fontsize', 30,'ydir','reverse');
-%lenged('Standart PE', 'Wide-angle PE')
-hold on
-grid on
+Fig2 = plot(r(:)/1000,TL_1(Nzr, :),'LineWidth',2);
+xlabel('Range (km)');  
+ylabel('Loss (dB)');
+set(gca,'fontsize', 34,'ydir','reverse');
 axis([5, 10, 0, 100]);
 %{
 figure
@@ -134,5 +141,20 @@ for n = 1 : 1 : half_index * 2
         output(n) = input(n - half_index);
     end
 end
+end
+
+function R = reflect_coe(C1, C2, RHO1, RHO2, Theta_R)
+if Theta_R < acos(C1/C2)
+    R = 1;
+else
+    Theta_T = acos(C2 * cos(Theta_R) / C1);
+    Z1 = RHO1 * C1 / tan(Theta_R);
+    Z2 = RHO2 * C2 / tan(Theta_T);
+    R = (Z2 - Z1) / (Z2 + Z1);
+end
+end
+
+function Theta = Propagate_Angle(ZS, ZR, Distance)
+Theta = atan((ZR - ZS) / Distance);
 end
 
