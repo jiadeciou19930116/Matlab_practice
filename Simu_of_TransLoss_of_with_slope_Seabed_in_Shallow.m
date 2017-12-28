@@ -5,9 +5,9 @@ zr = 30;
 % depth of source, receiver and bottom of the water body, unit is m.
 % the bottom has a angle 2.86 deg with horizantal axis, 
 % begin with depth of 200m, end at 4km distance to seaq surface 
-N = 512;
-zmax = 512;             % cutoff depth, no reflect
-H = 384;                % end of the physical domain
+N = 2^11;
+zmax = 2^11;             % cutoff depth, no reflect
+H = 0.75 * 2 ^ 11;                % end of the physical domain
 D = (zmax - H) / 3;
 delta_z = 1;          % distance between continuous sample point on z-direction, unit is m.
 Nzr = zr / delta_z;
@@ -15,7 +15,7 @@ Nzs = zs / delta_z;
 Nzmax = zmax / delta_z;
 
 rmax = 4 * 10 ^ 3;
-delta_r = 5;           % distance between continuous sample point on r-direction, unit is m.
+delta_r = 1;           % distance between continuous sample point on r-direction, unit is m.
 Nr = rmax / delta_r;    % number of sample points on one row, without r = 0;
 r = linspace(0, rmax, Nr +1);  % location of each sample point on one row
 
@@ -42,19 +42,28 @@ rhoa = 1.293 * 10 ^ (-3);
 for nr = 1 : 1 : Nr
     for nz = 1 :1 : Nzmax
         zb =  200 - tand(2.86) * nr * delta_r;
-        if nz <= zb - L / 2
+        if  nz * delta_z <= zb - L / 2
             rho(nz, nr) = rho0;
-            n2(nz, nr) = 1;                 % index of refraction in water
-        elseif  zb + L / 2 < nz <= H
-            rho(nz, nr) = rhob;
-            n2(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
-        elseif  zb - L / 2 < nz <= zb + L / 2 
-                
-                rho(nz, nr) = density(nz, zb, L, rho0, rhob); 
-                n2(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz - zb) / L))^(-3) * sinh(((nz - zb) / L)))...
-                    + 3 / 2 / (rho(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz - zb) / L))^(-2))^2 );
+        elseif   nz * delta_z <= zb + L / 2 
+                rho(nz, nr) = density(nz, zb, L, rho0, rhob);             
         else
             rho(nz, nr) = rhob;
+        end
+    end
+end
+
+
+for nr = 1 : 1 : Nr
+    for nz = 1 :1 : Nzmax
+        zb =  200 - tand(2.86) * nr * delta_r;
+        if  nz * delta_z <= zb - L / 2
+            n2(nz, nr) = 1;                 % index of refraction in water
+         elseif  nz * delta_z <= zb + L / 2     
+                n2(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz - zb) / L))^(-3) * sinh(((nz - zb) / L)))...
+                    + 3 / 2 / (rho(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz - zb) / L))^(-2))^2 );           
+        elseif  nz * delta_z <= H
+            n2(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
+        else
             n2(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29) + 1i * 0.01 * exp(-((nz * delta_z - zmax) / D)^2));
         end
     end
@@ -81,6 +90,17 @@ for nz = 1 : 1 : Nzmax
 end
 
 %% Start calculation.
+
+   psi_c_ref(:) = psi(:, 1);
+   psi_s_ref = swap(psi_c_ref(:), N/2);
+   PSI_S_ref = fft(psi_s_ref(:));
+   PSI_ref = swap(PSI_S_ref(:), N/2);
+   PSI_T_ref(:) = exp(-1i .* kz(:) .^ 2 * 1 .* [ (k0^2 - kz(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref(:);
+   PSI_TS_ref = swap(PSI_T_ref(:), N/2);
+   psi_ts_ref = ifft(PSI_TS_ref(:));
+   psi_t_ref = swap(psi_ts_ref(:), N/2);
+   psi_ref(:) = psi_t_ref(:) .* exp(1i * k0 / 2 .* (n2(:, 1) - 1) * 1); 
+
 for nr = 1 : 1 : Nr
    psi_c(:) = psi(:, nr);
    psi_s = swap(psi_c(:), N/2);
@@ -90,7 +110,7 @@ for nr = 1 : 1 : Nr
    PSI_TS = swap(PSI_T(:), N/2);
    psi_ts = ifft(PSI_TS(:));
    psi_t = swap(psi_ts(:), N/2);
-   psi(:, nr + 1) = psi_t(:) .* exp(1i * k0 .* (n2(:, nr) - 1) * delta_r);  
+   psi(:, nr + 1) = psi_t(:) .* exp(1i * k0 / 2 .* (n2(:, nr) - 1) * delta_r);  
 end
 
 for nr = 1 : 1 : Nr
@@ -107,7 +127,7 @@ end
 
 for nr = 2 : 1 :Nr + 1
     for nz = 1 : 1 : N
-        TL(nz, nr) = - 20 * log10(abs(psi(nz, nr) *  sqrt(rho(nz, nr - 1)))./ sqrt((nr - 1) * delta_r) / abs(psi(zs / delta_z, 2)) / sqrt(rho0));
+        TL(nz, nr) =  - 20 * log10(abs(psi(nz, nr) *  sqrt(rho(nz, nr - 1)))./ sqrt((nr - 1) * delta_r) / abs(psi_ref(zs / delta_z)) / sqrt(rho0));
     end
 end
 
@@ -116,6 +136,10 @@ for nr = 2 : 1 :Nr + 1
         S_TL(nz, nr) = - 20 * log10(abs(S_psi(nz, nr) *  sqrt(rho(nz, nr - 1)))./ sqrt((nr - 1) * delta_r) / abs(S_psi(zs / delta_z, 2)) / sqrt(rho0));
     end
 end
+E1 = delta_r^2 / 2 * 1i * k0 / 2 * (n2(Nzr, Nr) - n2(Nzr, Nr-1)) / delta_r * S_psi(Nzr, Nr) *  sqrt(rho(Nzr, Nr - 1));
+E2 = - delta_r^2/8 * ...
+    ( (n2(Nzr, Nr) - n2(Nzr - 1, Nr)) / delta_z ^ 2 * S_psi(Nzr, Nr) *  sqrt(rho(Nzr, Nr - 1)) ...
+    - 2* (n2(Nzr, Nr) - n2(Nzr - 1, Nr))  / delta_z * ( S_psi(Nzr, Nr) *  sqrt(rho(Nzr, Nr - 1)) - S_psi(Nzr - 1, Nr) *  sqrt(rho(Nzr - 1, Nr - 1)) )/ delta_z );
 
 
 %% Show the result
