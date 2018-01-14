@@ -6,7 +6,7 @@ zr = 30;
 % the bottom has a angle 2.86 deg with horizantal axis, 
 % begin with depth of 200m, end at 4km distance to seaq surface 
 delta_z = 1;
-N = 2^15;
+N = 2^11;
 zmax = N * delta_z;             % cutoff depth, no reflect
 H = 0.75 * N;                % end of the physical domain
 D = (zmax - H) / 3;
