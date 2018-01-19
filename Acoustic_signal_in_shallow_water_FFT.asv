@@ -240,7 +240,8 @@ for nr = 1 : 1 : Nr
         elseif nz * delta_z2 <= zb2 - L / 2
             n2_2(nz, nr) = 1;                 % index of refraction in water
         elseif   nz * delta_z2 <= zb2 + L / 2 
-            n2_2(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho2(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz * delta_z2 - zb2) / L))^(-3) * sinh(((nz * delta_z2 - zb2) / L)))...
+            n2_2(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho2(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz * delta_z2 - zb2) / L))^(-3) ...
+                    * sinh(((nz * delta_z2 - zb) / L)))...
                     + 3 / 2 / (rho2(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz * delta_z2 - zb2) / L))^(-2))^2 );
         elseif   nz * delta_z2 <= H2
             n2_2(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
