@@ -34,35 +34,35 @@ Nzs1 = zs1 / delta_z1;
 za2 = 1;
 ABL_A_N2 = 0;
 A_N2 = 0;
-L_N2 = 20;
+L_N2 = 22;
 Ha2 = za2 / 4;
 Da2 = Ha2 / 3;
 zb2 = za2 + zb;
 zr2 = za2 + zr;
 zs2 = za2 + zs;
-W_N2 = 196 ;
+W_N2 = 194 + L_N2;
 ABL_B_N2 = 768 ;
 z2 = linspace(0,0, N1);
 for nz = 1 : 1 : N2
     if nz == 1
         z2(nz) = 0;
-    elseif nz <= ABL_A_N2 + A_N2 + 1
+    elseif nz < ABL_A_N2 + A_N2
         z2(nz) = z2(nz - 1) + delta_z2;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + 1
+    elseif nz < ABL_A_N2 + A_N2 + L_N2
         z2(nz) = z2(nz - 1) + 0.1;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + W_N2 + 1
+    elseif nz < W_N2
         z2(nz) = z2(nz - 1) + delta_z2;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + W_N2 + L_N2 + 1
+    elseif nz < W_N2 + L_N2
         z2(nz) = z2(nz - 1) + 0.1;
     else
         z2(nz) = z2(nz - 1) + delta_z2;
     end
 end
 NHa2 = ABL_A_N2;
-Nza2 = ABL_A_N2 + A_N2 + L_N2 / 2;
-Nzb2 = ABL_A_N2 + A_N2 + L_N2 + W_N2 + L_N2 / 2;
-Nzr2 = 222;
-Nzs2 = 222;
+Nza2 = ABL_A_N2  A_N2 + L_N2 / 2;
+Nzb2 = nz;
+Nzr2 = nz;
+Nzs2 = nz;
 
 %{
 za3 = 0;
