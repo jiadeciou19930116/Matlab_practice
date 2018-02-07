@@ -5,19 +5,19 @@ zr = 99.5;
 zb = 100;
 % depth of source, receiver and bottom of the water body, unit is m.
 
-N1 = 2^10;
+N1 = 2^11;
 delta_z1 = 0.5;          % distance between continuous sample point on z-direction, unit is m.
-
-N2 = 2^10;
-delta_z2 = 0.5;
 %{
-N3 = 2^10;
+N2 = 2^11;
+delta_z2 = 0.5;
+
+N3 = 2^11;
 delta_z3 = 0.5;
 
-N4 = 2^10;
+N4 = 2^11;
 delta_z4 = 0.5;
 
-N5 = 2^10; 
+N5 = 2^11; 
 delta_z5 = 0.5;
 %}
 
@@ -27,46 +27,23 @@ Da1 = Ha1 / 3;
 zb1 = za1 + zb;
 zr1 = za1 + zr;
 zs1 = za1 + zs;
-Nzb1 = zb1 / delta_z1;
-Nzr1 = zr1 / delta_z1;
-Nzs1 = zs1 / delta_z1;
-
-za2 = 1;
-ABL_A_N2 = 0;
-A_N2 = 0;
-L_N2 = 20;
-Ha2 = za2 / 4;
+Nzb1 = zb1 / delta_z1 + 1;
+Nzr1 = zr1 / delta_z1 + 1;
+Nzs1 = zs1 / delta_z1+ 1;
+%{
+za2 = 500;
+Ha2 = za2 * 3 / 4;
 Da2 = Ha2 / 3;
 zb2 = za2 + zb;
 zr2 = za2 + zr;
 zs2 = za2 + zs;
-W_N2 = 196 ;
-ABL_B_N2 = 768 ;
-z2 = linspace(0,0, N1);
-for nz = 1 : 1 : N2
-    if nz == 1
-        z2(nz) = 0;
-    elseif nz <= ABL_A_N2 + A_N2 + 1
-        z2(nz) = z2(nz - 1) + delta_z2;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + 1
-        z2(nz) = z2(nz - 1) + 0.1;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + W_N2 + 1
-        z2(nz) = z2(nz - 1) + delta_z2;
-    elseif nz <= ABL_A_N2 + A_N2 + L_N2 + W_N2 + L_N2 + 1
-        z2(nz) = z2(nz - 1) + 0.1;
-    else
-        z2(nz) = z2(nz - 1) + delta_z2;
-    end
-end
-NHa2 = ABL_A_N2;
-Nza2 = ABL_A_N2 + A_N2 + L_N2 / 2;
-Nzb2 = ABL_A_N2 + A_N2 + L_N2 + W_N2 + L_N2 / 2;
-Nzr2 = 222;
-Nzs2 = 222;
+Nzb2 = zb2 / delta_z2;
+Nzr2 = zr2 / delta_z2;
+Nzs2 = zs2 / delta_z2;
 
-%{
-za3 = 0;
-Ha3 = za3 / 4;
+
+za3 = 500;
+Ha3 = za3 * 3 / 4;
 Da3 = Ha3 / 3;
 zb3 = za3 + zb;
 zr3 = za3 + zr;
@@ -75,8 +52,8 @@ Nzb3 = zb3 / delta_z3;
 Nzr3 = zr3 / delta_z3;
 Nzs3 = zs3 / delta_z3;
 
-za4 = 0;
-Ha4 = za4 / 4;
+za4 = 500;
+Ha4 = za4 * 3 / 4;
 Da4 = Ha4 / 3;
 zb4 = za4 + zb;
 zr4 = za4 + zr;
@@ -85,8 +62,8 @@ Nzb4 = zb4 / delta_z4;
 Nzr4 = zr4 / delta_z4;
 Nzs4 = zs4 / delta_z4;
 
-za5 = 0;
-Ha5 = za5 / 4;
+za5 = 500;
+Ha5 = za5 * 3 / 4;
 Da5 = Ha5 / 3;
 zb5 = za5 + zb;
 zr5 = za5 + zr;
@@ -97,7 +74,7 @@ Nzs5 = zs5 / delta_z5;
 %}
 
 rmax = 10 * 1000;       % The maximun of harizotal distance
-delta_r = 1;           % distance between continuous sample point on r-direction, unit is m.
+delta_r = 0.5;           % distance between continuous sample point on r-direction, unit is m.
 Nr = rmax / delta_r;    % number of sample points on one row, without r = 0;
 r = linspace(0, rmax, Nr + 1);  % location of each sample point on one row
 % set about sample point on one row
@@ -117,7 +94,7 @@ rho1 = zeros(Nzmax1, Nr);     % mass density
 %z = linspace(delta_z, zmax1, N1);  % depth of each sample poins on one colume
 
 %%    N2
-
+%{
 zmax2 = N2 * delta_z2;
 Nzmax2 = zmax2 / delta_z2;      % the number of sample point for one colume (on z-axis)
 delta_kz2 = 2 * pi / N2 / delta_z2;
@@ -126,7 +103,7 @@ H2 = za2 + (zmax2 - za2) * 3 / 4;                % end of the physical domain
 D2 = (zmax2 - za2) / 4;
 n2_2 = zeros(Nzmax2, Nr);   % index of refraction
 rho2 = zeros(Nzmax2, Nr);     % mass density
-%{
+
 %%    N3
 
 zmax3 = N3 * delta_z3;
@@ -167,87 +144,79 @@ f = 250;                % frequency of the signal
 ff = f / 1000;
 c0 = 1500;              % speed in water
 cb = 1590;              % speed at bottom
-ca = 331.5;
+
 k0 = 2 * pi * f / c0;   % wave number in water
-ka = 2 * pi * f / ca;
 %   information about the signal
 L = 2 / k0; 
-La = 2 / ka;
+
 rho0 = 1000;            % mass density of water, kg / m^3
 rhob = 1200;            % mass density of bottom, kg / m^3
-rhoa = 1.293 * 10 ^ (-3);
 %   information about the enviroment
 att = 0.5; 
-att_a = 8.686 * 0.003 * ca / f;
-
 
 
 for nr = 1 : 1 : Nr
     for nz = 1 :1 : Nzmax1
-        if nz * delta_z1 <= za1 - L / 2
-            rho1(nz, nr) = rhoa;
-        elseif  nz * delta_z1 <= za1 + L / 2 
-            rho1(nz, nr) = density(nz * delta_z1, za1, L, rhoa, rho0); 
-        elseif nz * delta_z1 <= zb1 - L / 2
+        if (nz - 1) * delta_z1 <= zb1 - L / 2
             rho1(nz, nr) = rho0;
-        elseif  nz * delta_z1 <= zb1 + L / 2 
-            rho1(nz, nr) = density(nz * delta_z1, zb1, L, rho0, rhob); 
+        elseif  (nz - 1) * delta_z1 <= zb1 + L / 2 
+            rho1(nz, nr) = density((nz - 1) * delta_z1, zb1, L, rho0, rhob); 
         else
             rho1(nz, nr) = rhob;
         end
     end
-  
+       %{
     for nz = 1 :1 : Nzmax2
-        if z2(nz) <= za2 - L / 2
+        if nz * delta_z2 <= za2 - La2 / 2
             rho2(nz, nr) = rhoa;
-        elseif  z2(nz) <= za2 + L / 2 
-            rho2(nz, nr) = density(z2(nz), za2, L, rhoa, rho0); 
-        elseif z2(nz) <= zb2 - L / 2
+        elseif  nz * delta_z2 <= za2 + La2 / 2 
+            rho2(nz, nr) = density(nz * delta_z2, za2, La2, rhoa, rho0); 
+        elseif nz * delta_z2 <= zb2 - L / 2
             rho2(nz, nr) = rho0;
-        elseif  z2(nz) <= zb2 + L / 2 
-            rho2(nz, nr) = density(z2(nz), zb2, L, rho0, rhob); 
+        elseif  nz * delta_z2 <= zb2 + L / 2 
+            rho2(nz, nr) = density(nz * delta_z2, zb2, L, rho0, rhob); 
         else
             rho2(nz, nr) = rhob;
         end
     end
-     %{ 
+
     for nz = 1 :1 : Nzmax3
-        if nz * delta_z3 <= za3 - La / 2
+        if nz * delta_z3 <= za3 - La3 / 2
             rho3(nz, nr) = rhoa;
-        elseif  nz * delta_z3 <= za3 + La / 2 
-                rho3(nz, nr) = density(nz * delta_z3, za3, La, rhoa, rho0); 
+        elseif  nz * delta_z3 <= za3 + La3 / 2 
+            rho3(nz, nr) = density(nz * delta_z3, za3, La3, rhoa, rho0); 
         elseif nz * delta_z3 <= zb3 - L / 2
             rho3(nz, nr) = rho0;
         elseif  nz * delta_z3 <= zb3 + L / 2 
-                rho3(nz, nr) = density(nz * delta_z3, zb3, L, rho0, rhob); 
+            rho3(nz, nr) = density(nz * delta_z3, zb3, L, rho0, rhob); 
         else
             rho3(nz, nr) = rhob;
         end
     end
     
     for nz = 1 :1 : Nzmax4
-        if nz * delta_z4 <= za4 - La / 2
+        if nz * delta_z4 <= za4 - La4 / 2
             rho4(nz, nr) = rhoa;
-        elseif  nz * delta_z4 <= za4 + La / 2 
-                rho4(nz, nr) = density(nz * delta_z4, za4, La, rhoa, rho0); 
+        elseif  nz * delta_z4 <= za4 + La4 / 2 
+            rho4(nz, nr) = density(nz * delta_z4, za4, La4, rhoa, rho0); 
         elseif nz * delta_z4 <= zb4 - L / 2
             rho4(nz, nr) = rho0;
         elseif  nz * delta_z4 <= zb4 + L / 2 
-                rho4(nz, nr) = density(nz * delta_z4, zb4, L, rho0, rhob); 
+            rho4(nz, nr) = density(nz * delta_z4, zb4, L, rho0, rhob); 
         else
             rho4(nz, nr) = rhob;
         end
     end
     
     for nz = 1 :1 : Nzmax5
-        if nz * delta_z5 <= za5 - La / 2
+        if nz * delta_z5 <= za5 - L / 2
             rho5(nz, nr) = rhoa;
-        elseif  nz * delta_z5 <= za5 + La / 2 
-                rho5(nz, nr) = density(nz * delta_z5, za5, La, rhoa, rho0); 
+        elseif  nz * delta_z5 <= za5 + L / 2 
+            rho5(nz, nr) = density(nz * delta_z5, za5, L, rhoa, rho0); 
         elseif nz * delta_z5 <= zb5 - L / 2
             rho5(nz, nr) = rho0;
         elseif  nz * delta_z5 <= zb5 + L / 2 
-                rho5(nz, nr) = density(nz * delta_z5, zb5, L, rho0, rhob); 
+            rho5(nz, nr) = density(nz * delta_z5, zb5, L, rho0, rhob); 
         else
             rho5(nz, nr) = rhob;
         end
@@ -257,107 +226,112 @@ end
 
 for nr = 1 : 1 : Nr
     for nz = 1 :1 : Nzmax1
-        if nz * delta_z1 <= Ha1
-            n2_1(nz, nr) = ABL_ATT_air(c0, ca, att_a, nz * delta_z1, Ha1, Da1);
-        elseif nz * delta_z1 <= za1 - L / 2
-            n2_1(nz, nr) = (c0 / ca)^2 * (1 + 1i * att_a / 27.29);
-        elseif nz * delta_z1 <= za1 
-            n2_1(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho1(nz, nr), rhoa, rho0, L, nz * delta_z1, za1);
-        elseif nz * delta_z1 <= za1 + L / 2
-            n2_1(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho1(nz, nr), rhoa, rho0, L, nz * delta_z1, za1); %%
-        elseif nz * delta_z1 <= zb1 - L / 2
+        if (nz - 1) * delta_z1 <= zb1 - L / 2
             n2_1(nz, nr) = 1;                 % index of refraction in water
-        elseif   nz * delta_z1 <= zb1  
-            n2_1(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho1(nz, nr), rho0, rhob, L, nz * delta_z1, zb1);%%
-        elseif   nz * delta_z1 <= zb1 + L / 2 
-            n2_1(nz, nr) =  n_AT_INTERFACE(c0, cb, k0, rho1(nz, nr), rho0, rhob, L, nz * delta_z1, zb1);
-        elseif   nz * delta_z1 <= H1
+        elseif   (nz - 1) * delta_z1 <= zb1 + L / 2 
+            c = density((nz - 1) * delta_z1, zb1, L, c0, cb);
+            n2_1(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho1(nz, nr), rho0, rhob, L, (nz - 1) * delta_z1, zb1);
+        elseif   (nz - 1) * delta_z1 <= H1
              n2_1(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
         else
-             n2_1(nz, nr) = ABL_ATT_bottom(c0, cb, att, nz * delta_z1, zmax1, D1);
+             n2_1(nz, nr) = ABL_ATT_bottom(c0, cb, att, (nz - 1) * delta_z1, zmax1, D1);
         end
     end
-
+   %{
     for nz = 1 :1 : Nzmax2
-        if z2(nz) <= Ha2
-            n2_2(nz, nr) = ABL_ATT_air(c0, ca, att_a, z2(nz), Ha2, Da2);
-        elseif z2(nz) <= za2 - L / 2
+        if nz * delta_z2 <= Ha2
+            n2_2(nz, nr) = ABL_ATT_air(c0, ca, att_a, nz * delta_z2, Ha2, Da2);
+        elseif nz * delta_z2 <= za2 - La2 / 2
             n2_2(nz, nr) = (c0 / ca)^2 * (1 + 1i * att_a / 27.29);
-        elseif z2(nz) <= za2 
-            n2_2(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho1(nz, nr), rhoa, rho0, L, z2(nz), za2);
-        elseif z2(nz) <= za2 + L / 2
-            n2_2(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho1(nz, nr), rhoa, rho0, L, z2(nz), za2); %%
-        elseif z2(nz) <= zb2 - L / 2
+        %elseif nz * delta_z2 <= za2 
+        %    n2_2(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho2(nz, nr), rhoa, rho0, La2, nz * delta_z2, za2);
+        elseif nz * delta_z2 <= za2 + La2 / 2
+            c = density(nz * delta_z2, za2, La2, ca, c0);
+            n2_2(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho2(nz, nr), rhoa, rho0, La2, nz * delta_z2, za2); %%
+        elseif nz * delta_z2 <= zb2 - L / 2
             n2_2(nz, nr) = 1;                 % index of refraction in water
-        elseif   z2(nz) <= zb2  
-            n2_2(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho1(nz, nr), rho0, rhob, L, z2(nz), zb2);%%
-        elseif   z2(nz) <= zb2 + L / 2 
-            n2_2(nz, nr) =  n_AT_INTERFACE(c0, cb, k0, rho1(nz, nr), rho0, rhob, L, z2(nz), zb2);
-        elseif   z2(nz) <= H1
+        %elseif   nz * delta_z2 <= zb2  
+        %    n2_2(nz, nr) =  n_AT_INTERFACE(c0, cb, k0, rho2(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);%%
+        elseif   nz * delta_z2 <= zb2 + L / 2 
+            c = density(nz * delta_z2, zb2, L, c0, cb);
+            n2_2(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho2(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);
+        elseif   nz * delta_z2 <= H1
              n2_2(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
         else
-             n2_2(nz, nr) = ABL_ATT_bottom(c0, cb, att, z2(nz), zmax1, D1);
+             n2_2(nz, nr) = ABL_ATT_bottom(c0, cb, att, nz * delta_z2, zmax1, D1);
         end
     end
     
-        %{
+     
     for nz = 1 :1 : Nzmax3
         if nz * delta_z3 <= Ha3
-            n2_3(nz, nr) = ((c0 / ca)^2 * (1 + 1i * att_a / 27.29) + 1i * 0.01 * exp(-((nz * delta_z3 - Ha3) *3/ Da3)^2));
+            n2_3(nz, nr) = ABL_ATT_air(c0, ca, att_a, nz * delta_z3, Ha3, Da3);
         elseif nz * delta_z3 <= za3 - L / 2
             n2_3(nz, nr) = (c0 / ca)^2 * (1 + 1i * att_a / 27.29);
-        elseif nz * delta_z3 <= za3 + L / 2
-            n2_3(nz, nr) =  (c0 / ca)^2 + (1 / 2 / ka^2) * ((1/rho3(nz, nr)) * (-(rhoa - rho0)/L^2 * (cosh((nz * delta_z3 - za3) / L))^(-3) * sinh(((nz * delta_z3 - za3) / L)))...
-                 + 3 / 2 / (rho3(nz, nr))^2  * ( (rhoa - rho0)/2 /L * (cosh((nz * delta_z3 - za3) / L))^(-2))^2 );
-        elseif nz * delta_z3 <= zb3 - L / 2
+        %elseif nz * delta_z3 <= za3 
+        %    n2_3(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho3(nz, nr), rhoa, rho0, L, nz * delta_z2, za3);
+        elseif nz * delta_z3 <= za3 + La3 / 2
+            c = density(nz * delta_z3, za3, La3, ca, c0);
+            n2_3(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho3(nz, nr), rhoa, rho0, La3, nz * delta_z2, za3); %%
+        elseif nz * delta_z2 <= zb3 - L / 2
             n2_3(nz, nr) = 1;                 % index of refraction in water
-        elseif   nz * delta_z3 <= zb3 + L / 2 
-                n2_3(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho3(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz * delta_z3 - zb3) / L))^(-3) * sinh(((nz * delta_z3 - zb3) / L)))...
-                    + 3 / 2 / (rho3(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz * delta_z3 - zb3) / L))^(-2))^2 );
-        elseif   nz * delta_z3 <= H3
+        %elseif   nz * delta_z2 <= zb3  
+        %    n2_3(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho3(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);%%
+        elseif   nz * delta_z2 <= zb2 + L / 2 
+            c = density(nz * delta_z3, zb3, L, c0, cb);
+            n2_3(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho3(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);
+        elseif   nz * delta_z2 <= H1
              n2_3(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
         else
-            n2_3(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29) + 1i * 0.02 * exp(-((nz * delta_z3 - zmax3) *4/ D3)^2));
+             n2_3(nz, nr) = ABL_ATT_bottom(c0, cb, att, nz * delta_z3, zmax1, D1);
         end
     end
     
     for nz = 1 :1 : Nzmax4
         if nz * delta_z4 <= Ha4
-            n2_4(nz, nr) = ((c0 / ca)^2 * (1 + 1i * att_a / 27.29)  + 1i * 0.01 * exp(-((nz * delta_z4 - Ha4) / Da4)^2));
-        elseif nz * delta_z4 <= za4 - L / 2
+            n2_4(nz, nr) = ABL_ATT_air(c0, ca, att_a, nz * delta_z4, Ha4, Da4);
+        elseif nz * delta_z4 <= za4 - La4 / 2
             n2_4(nz, nr) = (c0 / ca)^2 * (1 + 1i * att_a / 27.29);
-        elseif nz * delta_z4 <= za4 + L / 2
-            n2_4(nz, nr) =  (c0 / ca)^2 + (1 / 2 / ka^2) * ((1/rho4(nz, nr)) * (-(rhoa - rho0)/L^2 * (cosh((nz * delta_z4 - za4) / L))^(-3) * sinh(((nz * delta_z4 - za4) / L)))...
-                 + 3 / 2 / (rho4(nz, nr))^2  * ( (rhoa - rho0)/2 /L * (cosh((nz * delta_z4 - za4) / L))^(-2))^2 );
-        elseif nz * delta_z4 <= zb4 - L / 2
+        %elseif nz * delta_z4 <= za4 
+        %    n2_4(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho4(nz, nr), rhoa, rho0, L, nz * delta_z2, za4);
+        elseif nz * delta_z4 <= za4 + La4 / 2
+            c = density(nz * delta_z2, za4, La4, ca, c0);
+            n2_4(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho4(nz, nr), rhoa, rho0, La4, nz * delta_z2, za4); %%
+        elseif nz * delta_z2 <= zb4 - L / 2
             n2_4(nz, nr) = 1;                 % index of refraction in water
-        elseif   nz * delta_z4 <= zb4 + L / 2 
-                n2_4(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho4(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz * delta_z4 - zb4) / L))^(-3) * sinh(((nz * delta_z4 - zb4) / L)))...
-                    + 3 / 2 / (rho4(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz * delta_z4 - zb4) / L))^(-2))^2 );
-        elseif   nz * delta_z4 <= H4
-            n2_4(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
+        %elseif   nz * delta_z2 <= zb4  
+        %    n2_4(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho4(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);%%
+        elseif   nz * delta_z2 <= zb2 + L / 2 
+            c = density(nz * delta_z4, zb4, L, c0, cb);
+            n2_4(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho4(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);
+        elseif   nz * delta_z2 <= H1
+             n2_4(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
         else
-            n2_4(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29) + 1i * 0.02 * exp(-((nz * delta_z4 - zmax4) / D4)^2));
+             n2_4(nz, nr) = ABL_ATT_bottom(c0, cb, att, nz * delta_z4, zmax1, D1);
         end
     end
     
     for nz = 1 :1 : Nzmax5
         if nz * delta_z5 <= Ha5
-            n2_5(nz, nr) = ((c0 / ca)^2 * (1 + 1i * att_a / 27.29) + 1i * 0.01 * exp(-((nz * delta_z5 - Ha5) / Da5)^2));
+            n2_5(nz, nr) = ABL_ATT_air(c0, ca, att_a, nz * delta_z5, Ha5, Da5);
         elseif nz * delta_z5 <= za5 - L / 2
             n2_5(nz, nr) = (c0 / ca)^2 * (1 + 1i * att_a / 27.29);
+        %elseif nz * delta_z5 <= za5 
+        %    n2_5(nz, nr) =  n_AT_INTERFACE(c0, ca, k0, rho5(nz, nr), rhoa, rho0, L, nz * delta_z2, za5);
         elseif nz * delta_z5 <= za5 + L / 2
-            n2_5(nz, nr) =  (c0 / ca)^2 + (1 / 2 / k0^2) * ((1/rho5(nz, nr)) * (-(rhoa - rho0)/L^2 * (cosh((nz * delta_z5 - za5) / L))^(-3) * sinh(((nz * delta_z5 - za5) / L)))...
-                 + 3 / 2 / (rho5(nz, nr))^2  * ( (rhoa - rho0)/2 /L * (cosh((nz * delta_z5 - za5) / L))^(-2))^2 );
-        elseif nz * delta_z5 <= zb5 - L / 2
+            c = density(nz * delta_z2, za5, La5, ca, c0);
+            n2_5(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho5(nz, nr), rhoa, rho0, L, nz * delta_z2, za5); %%
+        elseif nz * delta_z2 <= zb5 - L / 2
             n2_5(nz, nr) = 1;                 % index of refraction in water
-        elseif   nz * delta_z5 <= zb5 + L / 2 
-                n2_5(nz, nr) = 1 + (1 / 2 / k0^2) * ((1/rho5(nz, nr)) * (-(rho0 - rhob)/L^2 * (cosh((nz * delta_z5 - zb5) / L))^(-3) * sinh(((nz * delta_z5 - zb5) / L)))...
-                    + 3 / 2 / (rho5(nz, nr))^2  * ( (rho0 - rhob)/2 /L * (cosh((nz * delta_z5 - zb5) / L))^(-2))^2 );
-        elseif   nz * delta_z5 <= H5
-                            n2_5(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
+        %elseif   nz * delta_z2 <= zb5  
+        %    n2_5(nz, nr) =  n_AT_INTERFACE(c0, c0, k0, rho5(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);%%
+        elseif   nz * delta_z2 <= zb2 + L / 2 
+            c = density(nz * delta_z5, zb5, L, c0, cb);
+            n2_5(nz, nr) =  n_AT_INTERFACE(c0, c, k0, rho5(nz, nr), rho0, rhob, L, nz * delta_z2, zb2);
+        elseif   nz * delta_z2 <= H1
+             n2_5(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29));    % index of refraction in bottom
         else
-              n2_5(nz, nr) = ((c0 / cb)^2 * (1 + 1i * att / 27.29) + 1i * 0.02 * exp(-((nz * delta_z5 - zmax5) / D5)^2));
+             n2_5(nz, nr) = ABL_ATT_bottom(c0, cb, att, nz * delta_z5, zmax1, D1);
         end
     end
     %}
@@ -370,10 +344,10 @@ end
 %% DecLre the equations
    psi_1 = zeros(Nzmax1, Nr);
    TL_1 = zeros(Nzmax1, Nr);
-
+%{
    psi_2 = zeros(Nzmax2, Nr);
    TL_2 = zeros(Nzmax2, Nr);
-      %{
+ 
    psi_3 = zeros(Nzmax3, Nr);
    TL_3 = zeros(Nzmax3, Nr);
    psi_4 = zeros(Nzmax4, Nr);
@@ -385,80 +359,29 @@ end
 %% Define reference transmission loss, it will use to compare our calculated result.
 % source = Gaussian_starter(ZS, ZR, K0)
 for nz = 1 : 1 : Nzmax1
-    psi_1(nz, 1) = Gaussian_starter(za1 + zs, nz * delta_z1, k0) / sqrt(rho0) - Gaussian_starter(za1 - zs, nz * delta_z1, k0) / sqrt(rho0);
-end
-
-for nz = 1 : 1 : Nzmax2
-    psi_2(nz, 1) = Gaussian_starter(za2 + zs, z2(nz), k0) / sqrt(rho0)- Gaussian_starter(za2 - zs, z2(nz), k0) / sqrt(rho0) ;
+    if nz - 1 >= za1
+        psi_1(nz, 1) = Gaussian_starter(za1 + zs, (nz - 1) * delta_z1, k0) / sqrt(rho0) - Gaussian_starter(za1 - zs, (nz - 1) * delta_z1, k0) / sqrt(rho0);
+    end
 end
 %{
+for nz = 1 : 1 : Nzmax2
+    psi_2(nz, 1) = Gaussian_starter(za2 + zs, nz * delta_z2, k0) / sqrt(rho0) ;
+end
+
 for nz = 1 : 1 : Nzmax3
-    psi_3(nz, 1) = Gaussian_starter(za3 + zs, nz * delta_z3, k0) / sqrt(rho0) - Gaussian_starter(za3 -zs, nz * delta_z3, k0) / sqrt(rho0);
+    psi_3(nz, 1) = Gaussian_starter(za3 + zs, nz * delta_z3, k0) / sqrt(rho0);
 end
 for nz = 1 : 1 : Nzmax4
-    psi_4(nz, 1) = Gaussian_starter(za4 + zs, nz * delta_z4, k0) / sqrt(rho0) - Gaussian_starter(za4 -zs, nz * delta_z4, k0) / sqrt(rho0);
+    psi_4(nz, 1) = Gaussian_starter(za4 + zs, nz * delta_z4, k0) / sqrt(rho0);
 end
 
 for nz = 1 : 1 : Nzmax5
-    psi_5(nz, 1) = Gaussian_starter(za5 +zs, nz * delta_z5, k0) / sqrt(rho0) - Gaussian_starter(za5 -zs, nz * delta_z5, k0) / sqrt(rho0);
+    psi_5(nz, 1) = Gaussian_starter(za5 +zs, nz * delta_z5, k0) / sqrt(rho0);
 end
 %}
 
 %% Start calculation.
-  psi_c_ref_1(:) = psi_1(:, 1);
-   psi_s_ref_1 = swap(psi_c_ref_1(:), N1/2);
-   PSI_S_ref_1 = fft(psi_s_ref_1(:));
-   PSI_ref_1 = swap(PSI_S_ref_1(:), N1/2);
-   PSI_T_ref_1(:) = exp(-1i .* kz1(:) .^ 2 * 1 .* [ (k0^2 - kz1(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref_1(:);
-   PSI_TS_ref_1 = swap(PSI_T_ref_1(:), N1/2);
-   psi_ts_ref_1 = ifft(PSI_TS_ref_1(:));
-   psi_t_ref_1 = swap(psi_ts_ref_1(:), N1/2);
-   psi_ref_1(:) = psi_t_ref_1(:) .* exp(1i * k0 / 2 .* (n2_1(:, 1) - 1) * 1); 
-   %% 2
 
-   psi_c_ref_2(:) = psi_2(:, 1);
-   psi_s_ref_2 = swap(psi_c_ref_2(:), N2/2);
-   PSI_S_ref_2 = fft(psi_s_ref_2(:));
-   PSI_ref_2 = swap(PSI_S_ref_2(:), N2/2);
-   PSI_T_ref_2(:) = exp(-1i .* kz2(:) .^ 2 * 1 .* [ (k0^2 - kz2(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref_2(:);
-   PSI_TS_ref_2 = swap(PSI_T_ref_2(:), N2/2);
-   psi_ts_ref_2 = ifft(PSI_TS_ref_2(:));
-   psi_t_ref_2 = swap(psi_ts_ref_2(:), N2/2);
-   psi_ref_2(:) = psi_t_ref_2(:) .* exp(1i * k0 / 2 .* (n2_2(:, 1) - 1) * 1); 
-   %% 3
-   %{   
-   psi_c_ref_3(:) = psi_3(:, 1);
-   psi_s_ref_3 = swap(psi_c_ref_3(:), N3/2);
-   PSI_S_ref_3 = fft(psi_s_ref_3(:));
-   PSI_ref_3 = swap(PSI_S_ref_3(:), N3/2);
-   PSI_T_ref_3(:) = exp(-1i .* kz3(:) .^ 2 * 1 .* [ (k0^2 - kz3(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref_3(:);
-   PSI_TS_ref_3 = swap(PSI_T_ref_3(:), N3/2);
-   psi_ts_ref_3 = ifft(PSI_TS_ref_3(:));
-   psi_t_ref_3 = swap(psi_ts_ref_3(:), N3/2);
-   psi_ref_3(:) = psi_t_ref_3(:) .* exp(1i * k0 / 2 .* (n2_3(:, 1) - 1) * 1);   
-   %% 4
-     psi_c_ref_4(:) = psi_4(:, 1);
-   psi_s_ref_4 = swap(psi_c_ref_4(:), N4/2);
-   PSI_S_ref_4 = fft(psi_s_ref_4(:));
-   PSI_ref_4 = swap(PSI_S_ref_4(:), N4/2);
-   PSI_T_ref_4(:) = exp(-1i .* kz4(:) .^ 2 * 1 .* [ (k0^2 - kz4(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref_4(:);
-   PSI_TS_ref_4 = swap(PSI_T_ref_4(:), N4/2);
-   psi_ts_ref_4 = ifft(PSI_TS_ref_4(:));
-   psi_t_ref_4 = swap(psi_ts_ref_4(:), N4/2);
-   psi_ref_4(:) = psi_t_ref_4(:) .* exp(1i * k0 / 2 .* (n2_4(:, 1) - 1) * 1); 
-   
-   %%
-   
-   psi_c_ref_5(:) = psi_5(:, 1);
-   psi_s_ref_5 = swap(psi_c_ref_5(:), N5/2);
-   PSI_S_ref_5 = fft(psi_s_ref_5(:));
-   PSI_ref_5 = swap(PSI_S_ref_5(:), N5/2);
-   PSI_T_ref_5(:) = exp(-1i .* kz5(:) .^ 2 * 1 .* [ (k0^2 - kz5(:).^2).^(1/2) + k0 ] .^ (-1) ) .* PSI_ref_5(:);
-   PSI_TS_ref_5 = swap(PSI_T_ref_5(:), N5/2);
-   psi_ts_ref_5 = ifft(PSI_TS_ref_5(:));
-   psi_t_ref_5 = swap(psi_ts_ref_5(:), N5/2);
-   psi_ref_5(:) = psi_t_ref_5(:) .* exp(1i * k0 / 2 .* (n2_5(:, 1) - 1) * 1); 
-%}
    
    %%
 for nr = 1 : 1 : Nr
@@ -482,12 +405,12 @@ end
 
 %%  error at receiver (nz = 199) at 7000m 
 E2 = - (delta_r ^2 / 8) * ...
-    ((n2_1(198 , 7000) - 2 * n2_1(199 , 7000) +  n2_1(200 , 7000)) / delta_z1^2 * psi_1(199, 7000) *  sqrt(rho1(199, 6999)) ...
-    - 2 * (n2_1(200, 7000) - n2_1(199, 7000)) / delta_z1 ...
-    * (psi_1(200, 7000) *  sqrt(rho1(200, 6999)) - psi_1(199, 7000) *  sqrt(rho1(199, 6999))) / delta_z1) ;
+    ((n2_1(198 , 14000) - 2 * n2_1(199 , 14000) +  n2_1(200 , 14000)) / delta_z1^2 * psi_1(199, 14000) *  sqrt(rho1(199, 6999)) ...
+    - 2 * (n2_1(200, 14000) - n2_1(199, 14000)) / delta_z1 ...
+    * (psi_1(200, 14000) *  sqrt(rho1(200, 6999)) - psi_1(199, 14000) *  sqrt(rho1(199, 6999))) / delta_z1) ;
 
 %%
-
+%{
 for nr = 1 : 1 : Nr
    psi_c_2(:) = psi_2(:, nr);
    psi_s_2 = swap(psi_c_2(:), N2/2);
@@ -506,7 +429,7 @@ for nr = 2 : 1 :Nr + 1
     end
 end
 %%
-%{
+
 for nr = 1 : 1 : Nr
    psi_c_3(:) = psi_3(:, nr);
    psi_s_3 = swap(psi_c_3(:), N3/2);
@@ -568,7 +491,7 @@ end
 %}
 
 %% Show the result
-%{
+
 figure
 Fig1 = pcolor(TL_1);
 hold on 
@@ -576,16 +499,16 @@ set(Fig1,'edgecolor','none');
 set(gca,'fontsize', 32,'ydir','reverse');
 xlabel('Range (km)');  
 ylabel('Depth (m)');
-caxis([25 60]);
-colorbar('fontsize', 32,'Ticks',[30,35,40,45,50,55],...
-    'TickLabels',{'30','35','40','45','50','55'});
+%caxis([25 60]);
+%colorbar('fontsize', 32,'Ticks',[30,35,40,45,50,55],...
+%    'TickLabels',{'30','35','40','45','50','55'});
 h=colorbar;
 set(get(h,'title'),'string','dB');
 colormap jet;
 %set(gca,'xtick',[0 :20:200]);
 %set(gca,'ytick',[0 :50:200]);
 %axis([1, 1000 / delta_r, 1, 200]);
-
+%{
 figure
 Fig2 = pcolor(TL_2);
 hold on 
@@ -646,11 +569,11 @@ colormap jet;
 figure
 plot(r(:)/1000 ,TL_1(Nzr1, :),'r','LineWidth',2);
 hold on
-plot(r(:)/1000 ,TL_2(Nzr2, :),'b','LineWidth',2);
 %{
-plot(r(:)/1000 ,TL_3(Nzr3, :),'y','LineWidth',2);
-plot(r(:)/1000 ,TL_4(Nzr4, :),'g','LineWidth',2);
-plot(r(:)/1000 ,TL_5(Nzr5, :),'k','LineWidth',2);
+plot(r(:)/1000 ,TL_2(Nzr2, :),'b','LineWidth',2);
+plot(r(:)/1000 ,TL_3(Nzr3, :),'g','LineWidth',2);
+plot(r(:)/1000 ,TL_4(Nzr4, :),'k','LineWidth',2);
+plot(r(:)/1000 ,TL_5(Nzr5, :),'y','LineWidth',2);
 %}
 xlabel('Range (km)');  
 ylabel('Loss (dB)');
@@ -660,12 +583,12 @@ axis([5, 10, 50, 120]);
 
 %% Sub functions define
 
-function rho = density(z, ZB, l, rho1, rho2)
-rho = 0.5 * (rho1 + rho2) + 0.5 * (rho2 - rho1) * tanh((z - ZB) / l) ;
+function rho = density(z, ZB, L, rho1, rho2)
+rho = 0.5 * (rho1 + rho2) + 0.5 * (rho2 - rho1) * tanh((z - ZB) / L) ;
 end
 
 function source = Gaussian_starter(ZS, ZR, K0)
-source =  sqrt(K0) * (exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 2) - exp(- K0 ^ 2 / 2 * (ZR + ZS) ^ 2)) ;
+source =  sqrt(K0) * exp(- K0 ^ 2 / 2 * (ZR - ZS) ^ 2);
 end
 
 function output = swap(input, half_index)
