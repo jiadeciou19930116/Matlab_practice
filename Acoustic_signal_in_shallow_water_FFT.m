@@ -237,7 +237,7 @@ end
 
 for nr = 2 : 1 :Nr + 1
     for nz = 1 : 1 : N
-        TL_3(nz, nr) = - 20 * log10(abs(psi_3(nz, nr) *  sqrt(rho3(nz, nr - 1)))./ sqrt((nr - 1) * delta_r)); % abs(psi_ref(zs / delta_z)) / sqrt(rho0));
+        TL_3(nz, nr) = - 20 * log10(abs(psi_3(nz, nr) *  sqrt(rho_3(nz, nr - 1)))./ sqrt((nr - 1) * delta_r)); % abs(psi_ref(zs / delta_z)) / sqrt(rho0));
     end
 end
 
@@ -265,8 +265,8 @@ colormap jet;
 figure
 plot(z_1(:) ,TL_1(:, 3),'r','LineWidth',2);
 hold on
-plot(z2(:) ,TL_2(:, 3),'b','LineWidth',2);
-plot(z3(:) ,TL_3(:, 3),'k','LineWidth',2);
+plot(z_2(:) ,TL_2(:, 3),'b','LineWidth',2);
+plot(z_3(:) ,TL_3(:, 3),'k','LineWidth',2);
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -275,8 +275,8 @@ axis([0, inf, 0, 100]);
 figure
 plot(z_1(:) ,TL_1(:, 10 / delta_r + 1),'r','LineWidth',2);
 hold on
-plot(z2(:) ,TL_2(:, 10 / delta_r + 1),'b','LineWidth',2);
-plot(z3(:) ,TL_3(:, 10 / delta_r + 1),'k','LineWidth',2);
+plot(z_2(:) ,TL_2(:, 10 / delta_r + 1),'b','LineWidth',2);
+plot(z_3(:) ,TL_3(:, 10 / delta_r + 1),'k','LineWidth',2);
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -285,8 +285,8 @@ axis([0, inf, 0, 100]);
 figure
 plot(z_1(:) ,TL_1(:, 100 / delta_r + 1),'r','LineWidth',2);
 hold on
-plot(z2(:) ,TL_2(:, 100 / delta_r + 1),'b','LineWidth',2);
-plot(z3(:) ,TL_3(:, 100 / delta_r + 1),'k','LineWidth',2);
+plot(z_2(:) ,TL_2(:, 100 / delta_r + 1),'b','LineWidth',2);
+plot(z_3(:) ,TL_3(:, 100 / delta_r + 1),'k','LineWidth',2);
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -295,8 +295,8 @@ axis([0, inf, 0, 100]);
 figure
 plot(z_1(:) ,TL_1(:, 1000 / delta_r + 1),'r','LineWidth',2);
 hold on
-plot(z2(:) ,TL_2(:, 1000 / delta_r + 1),'b','LineWidth',2);
-plot(z3(:) ,TL_3(:, 1000 / delta_r + 1),'k','LineWidth',2);
+plot(z_2(:) ,TL_2(:, 1000 / delta_r + 1),'b','LineWidth',2);
+plot(z_3(:) ,TL_3(:, 1000 / delta_r + 1),'k','LineWidth',2);
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -305,8 +305,8 @@ axis([0, inf, 0, 100]);
 figure
 plot(z_1(:) ,TL_1(:, 2000 / delta_r + 1),'r','LineWidth',2);
 hold on
-plot(z2(:) ,TL_2(:, 2000 / delta_r + 1),'b','LineWidth',2);
-plot(z3(:) ,TL_3(:, 2000 / delta_r + 1),'k','LineWidth',2);
+plot(z_2(:) ,TL_2(:, 2000 / delta_r + 1),'b','LineWidth',2);
+plot(z_3(:) ,TL_3(:, 2000 / delta_r + 1),'k','LineWidth',2);
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
