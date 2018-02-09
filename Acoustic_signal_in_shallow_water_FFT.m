@@ -24,13 +24,13 @@ N = 2^13;
       % the number of sample point for one colume (on z-axis)
 
 
-Hup_1 = zb + 100 * lambda_b;                % end of the physical domain
-Thickness_ABL_1 = 50 * lambda_b;
+Hup_1 = zb + 200 * lambda_b;                % end of the physical domain
+Thickness_ABL_1 = 200 * lambda_b;
 za_1 = Thickness_ABL_1 + Hup_1;
 zb_1 = za_1 + zb;
 zr_1 = za_1 + zr;
 zs_1 = za_1 + zs;
-H_1 = zb_1 + 100 * lambda_b;                % end of the physical domain
+H_1 = zb_1 + 200 * lambda_b;                % end of the physical domain
 D_1 = Thickness_ABL_1 / 3;
 zmax_1 = H_1 + Thickness_ABL_1;
 delta_z_1 = zmax_1/(N - 1); 
@@ -40,13 +40,13 @@ z_1 = linspace(-zmax_1 / 2, zmax_1 / 2, N);
 delta_kz_1 = 2 * pi / N / delta_z_1;
 kz_1 = linspace(- delta_kz_1 * (N / 2 - 1), delta_kz_1 * N / 2, N);
 
-Hup_2 = zb + 200 * lambda_b;                % end of the physical domain
-Thickness_ABL_2 = 100 * lambda_b;
+Hup_2 = zb + 250 * lambda_b;                % end of the physical domain
+Thickness_ABL_2 = 250 * lambda_b;
 za_2 = Thickness_ABL_2 + Hup_2;
 zb_2 = za_2 + zb;
 zr_2 = za_2 + zr;
 zs_2 = za_2 + zs;
-H_2 = zb_2 + 100 * lambda_b;                % end of the physical domain
+H_2 = zb_2 + 250 * lambda_b;                % end of the physical domain
 D_2 = Thickness_ABL_2 / 3;
 zmax_2 = H_2 + Thickness_ABL_2;
 delta_z_2 = zmax_2/(N - 1); 
@@ -55,14 +55,14 @@ rho_2 = zeros(N, Nr + 1);     % mass density
 z_2 = linspace(-zmax_2 / 2, zmax_2 / 2, N);
 delta_kz_2 = 2 * pi / N / delta_z_2;
 kz_2 = linspace(- delta_kz_2 * (N / 2 - 1), delta_kz_2 * N / 2, N);
-
+%{
 Hup_3 = zb + 200 * lambda_b;                % end of the physical domain
 Thickness_ABL_3 = 200 * lambda_b;
 za_3 = Thickness_ABL_3 + Hup_3;
 zb_3 = za_3 + zb;
 zr_3 = za_3 + zr;
 zs_3 = za_3 + zs;
-H_3 = zb_3 + 100 * lambda_b;                % end of the physical domain
+H_3 = zb_3 + 200 * lambda_b;                % end of the physical domain
 D_3 = Thickness_ABL_3 / 3;
 zmax_3 = H_3 + Thickness_ABL_3;
 delta_z_3 = zmax_3/(N - 1); 
@@ -71,8 +71,23 @@ rho_3 = zeros(N, Nr + 1);     % mass density
 z_3 = linspace(-zmax_3 / 2, zmax_3 / 2, N);
 delta_kz_3 = 2 * pi / N / delta_z_3;
 kz_3 = linspace(- delta_kz_3 * (N / 2 - 1), delta_kz_3 * N / 2, N);
+%}
 
 for nr = 1 : 1 : Nr + 1
+    for nz = 1 :1 : N
+        if (nz - 1) * delta_z_1 <= za_1 - zb - L / 2
+            rho_1(nz, nr) = rhob;
+        elseif (nz - 1) * delta_z_1 <= za_1 - zb + L / 2
+            rho_1(nz, nr) = density((nz - 1) * delta_z_1, za_1 - zb, L, rhob, rho0);
+        elseif (nz - 1) * delta_z_1 <= zb_1 - L / 2
+            rho_1(nz, nr) = rho0;
+        elseif  (nz - 1) * delta_z_1 <= zb_1 + L / 2 
+            rho_1(nz, nr) = density((nz - 1) * delta_z_1, zb_1, L, rho0, rhob); 
+        else
+            rho_1(nz, nr) = rhob;
+        end
+    end
+       
     for nz = 1 :1 : N
         if (nz - 1) * delta_z_2 <= za_2 - zb - L / 2
             rho_2(nz, nr) = rhob;
@@ -86,7 +101,7 @@ for nr = 1 : 1 : Nr + 1
             rho_2(nz, nr) = rhob;
         end
     end
-    
+    %{
     for nz = 1 :1 : N
         if (nz - 1) * delta_z_3 <= za_3 - zb - L / 2
             rho_3(nz, nr) = rhob;
@@ -100,6 +115,7 @@ for nr = 1 : 1 : Nr + 1
             rho_3(nz, nr) = rhob;
         end
     end
+    %}
 end
 
 for nr = 1 : 1 : Nr + 1
@@ -142,7 +158,7 @@ for nr = 1 : 1 : Nr + 1
              n2_2(nz, nr) = ABL_ATT_bottom(c0, cb, att, (nz - 1) * delta_z_2, zmax_2, D_2);
         end
     end
-    
+    %{
     for nz = 1 :1 : N
         if (nz - 1) * delta_z_3 <= Thickness_ABL_3
              n2_3(nz, nr) = ABL_ATT_bottom(c0, cb, att, 0 ,(nz - 1) * delta_z_3, D_3);
@@ -162,6 +178,7 @@ for nr = 1 : 1 : Nr + 1
              n2_3(nz, nr) = ABL_ATT_bottom(c0, cb, att, (nz - 1) * delta_z_3, zmax_3, D_3);
         end
     end
+    %}
 end
 %   information about the signal
 %% DecLre the equations
@@ -170,6 +187,7 @@ end
  
    psi_2 = zeros(N, Nr);
    TL_2 = zeros(N, Nr);
+   %{
    psi_3 = zeros(N, Nr);
    TL_3 = zeros(N, Nr);
 %}
@@ -182,6 +200,7 @@ end
 for nz = 1 : 1 : N
     psi_2(nz, 1) =  Gaussian_starter(zs_2, (nz - 1) * delta_z_2, k0) / sqrt(rho0) - Gaussian_starter(za_2 - zs, (nz - 1) * delta_z_2, k0) / sqrt(rho0);
 end
+%{
 for nz = 1 : 1 : N
     psi_3(nz, 1) = Gaussian_starter(zs_3, (nz - 1) * delta_z_3, k0) / sqrt(rho0) - Gaussian_starter(za_3 - zs, (nz - 1) * delta_z_3, k0) / sqrt(rho0);
 end
@@ -222,7 +241,7 @@ for nr = 2 : 1 :Nr + 1
         TL_2(nz, nr) = - 20 * log10(abs(psi_2(nz, nr) *  sqrt(rho_2(nz, nr - 1)))./ sqrt((nr - 1) * delta_r)); % abs(psi_ref(zs / delta_z)) / sqrt(rho0));
     end
 end
-
+%{
 for nr = 1 : 1 : Nr
    psi_c_3(:) = psi_3(:, nr);
    psi_s_3 = swap(psi_c_3(:), N/2);
@@ -240,7 +259,7 @@ for nr = 2 : 1 :Nr + 1
         TL_3(nz, nr) = - 20 * log10(abs(psi_3(nz, nr) *  sqrt(rho_3(nz, nr - 1)))./ sqrt((nr - 1) * delta_r)); % abs(psi_ref(zs / delta_z)) / sqrt(rho0));
     end
 end
-
+%}
 %%  error at receiver (nz = 199) at 7000m 
 %E2 = - (delta_r ^2 / 8) * ...
 %    ((n2_1(198 , 14000) - 2 * n2_1(199 , 14000) +  n2_1(200 , 14000)) / delta_z1^2 * psi_1(199, 14000) *  sqrt(rho1(199, 6999)) ...
@@ -250,7 +269,7 @@ end
 %% Show the result
 %{
 figure
-Fig1 = pcolor(r,z1,TL_1);
+Fig1 = pcolor(r,z_1,TL_1);
 hold on 
 set(Fig1,'edgecolor','none');
 set(gca,'fontsize', 32,'ydir','reverse');
@@ -262,31 +281,27 @@ set(get(h,'title'),'string','dB');
 colormap jet;
 %}
 
+
 figure
 plot(z_1(:) ,TL_1(:, 3),'r','LineWidth',2);
 hold on
 plot(z_2(:) ,TL_2(:, 3),'b','LineWidth',2);
+%{
 plot(z_3(:) ,TL_3(:, 3),'k','LineWidth',2);
+%}
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
-axis([0, inf, 0, 100]);
+axis([0, inf, 0, 120]);
 
-figure
-plot(z_1(:) ,TL_1(:, 10 / delta_r + 1),'r','LineWidth',2);
-hold on
-plot(z_2(:) ,TL_2(:, 10 / delta_r + 1),'b','LineWidth',2);
-plot(z_3(:) ,TL_3(:, 10 / delta_r + 1),'k','LineWidth',2);
-xlabel('Depth (m)');  
-ylabel('Loss (dB)');
-set(gca,'fontsize', 34,'ydir','reverse');
-axis([0, inf, 0, 100]);
 
 figure
 plot(z_1(:) ,TL_1(:, 100 / delta_r + 1),'r','LineWidth',2);
 hold on
 plot(z_2(:) ,TL_2(:, 100 / delta_r + 1),'b','LineWidth',2);
+%{
 plot(z_3(:) ,TL_3(:, 100 / delta_r + 1),'k','LineWidth',2);
+%}
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -296,7 +311,9 @@ figure
 plot(z_1(:) ,TL_1(:, 1000 / delta_r + 1),'r','LineWidth',2);
 hold on
 plot(z_2(:) ,TL_2(:, 1000 / delta_r + 1),'b','LineWidth',2);
+%{
 plot(z_3(:) ,TL_3(:, 1000 / delta_r + 1),'k','LineWidth',2);
+%}
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
@@ -306,12 +323,14 @@ figure
 plot(z_1(:) ,TL_1(:, 2000 / delta_r + 1),'r','LineWidth',2);
 hold on
 plot(z_2(:) ,TL_2(:, 2000 / delta_r + 1),'b','LineWidth',2);
+%{
 plot(z_3(:) ,TL_3(:, 2000 / delta_r + 1),'k','LineWidth',2);
+%}
 xlabel('Depth (m)');  
 ylabel('Loss (dB)');
 set(gca,'fontsize', 34,'ydir','reverse');
 axis([0, inf, 0, 100]);
-
+%}
 %% Sub functions define
 function rho = density(z, ZB, L, rho1, rho2)
 rho = 0.5 * (rho1 + rho2) + 0.5 * (rho2 - rho1) * tanh((z - ZB) / L) ;
