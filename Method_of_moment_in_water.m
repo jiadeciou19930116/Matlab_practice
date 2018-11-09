@@ -57,69 +57,40 @@ Zs_down = Z_compute_domain_edge + Z_s;
 Zs_up = Z_compute_domain_edge - Z_s;
 H_down = z_max - H_up;                % end of the physical domain
 D = Thickness_ABL / 3;
-l = 2 / k0;
+ell = 2 / k0;
  
 n2 = linspace(0, 0, N);   % index of refraction
-rho = linspace(0, 0, N);     % mass density
 Z = linspace(- Z_compute_domain_edge, Z_compute_domain_edge, N);
 delta_kz = 2 * pi / N / delta_z;
 kz = linspace(- delta_kz * (N / 2 - 1), delta_kz * N / 2, N);
-c_p = linspace(0, 0, N);
 
 
-for nz = 1 :1 : N
-        if (nz - 1) * delta_z <= Z_b_up - l / 2
-            rho(nz) = rho_b;
-        elseif (nz - 1) * delta_z <= Z_b_up +  l / 2
-            rho(nz) = density((nz - 1) * delta_z, Z_b_up, l, rho_b, rho_w);
-        elseif (nz - 1) * delta_z <= Z_b_down - l / 2
-            rho(nz) = rho_w;
-        elseif  (nz - 1) * delta_z <= Z_b_down + l / 2 
-            rho(nz) = density((nz - 1) * delta_z, Z_b_down, l, rho_w, rho_b); 
-        else
-            rho(nz) = rho_b;
-        end
-end
 
-
-for nr = 1 : 1 : Nr + 1
-    for nz = 1 :1 : N
-        if (nz - 1) * delta_z <= Z_b_up - l / 2
-            c_p(nz) = c_pb;
-        elseif (nz - 1) * delta_z <= Z_b_up +  l / 2
-            c_p(nz) = density((nz - 1) * delta_z, Z_b_up, l, c_pb, c_pw);
-        elseif (nz - 1) * delta_z <= Z_b_down - l / 2
-            c_p(nz) = c_pw;
-        elseif  (nz - 1) * delta_z <= Z_b_down + l / 2 
-            c_p(nz) = density((nz - 1) * delta_z, Z_b_down, l, c_pw, c_pb); 
-        else
-            c_p(nz) = c_pb;
-        end
-    end
-
-   lambda = rho .* c_p.^2 ;                          % the shear wave modules
+rho = SET_VALUE_ON_STRAIGHT_LINE(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [rho_b rho_w]);
+c_p = SET_VALUE_ON_STRAIGHT_LINE(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [c_pb c_pw]);
+lambda = rho .* c_p.^2 ;                          % the shear wave modules
 
 
     for nz = 1 :1 : N
         if (nz - 1) * delta_z <= Thickness_ABL
              n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, 0 ,(nz - 1) * delta_z, D);
-        elseif   (nz - 1) * delta_z <= Z_b_up - l / 2
+        elseif   (nz - 1) * delta_z <= Z_b_up - ell / 2
              n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
-        elseif   (nz - 1) * delta_z <= Z_b_up + l / 2 
-            c = density((nz - 1) * delta_z, Z_b_up, l, c_pb, c_pw);
-            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_b, rho_w, l, (nz - 1) * delta_z, Z_b_up);
-        elseif (nz - 1) * delta_z <= Z_b_down - l / 2
+        elseif   (nz - 1) * delta_z <= Z_b_up + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_up, ell, c_pb, c_pw);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_b, rho_w, ell, (nz - 1) * delta_z, Z_b_up);
+        elseif (nz - 1) * delta_z <= Z_b_down - ell / 2
             n2(nz) = 1;                 % index of refraction in water
-        elseif   (nz - 1) * delta_z <= Z_b_down + l / 2 
-            c = density((nz - 1) * delta_z, Z_b_down, l, c_pw, c_pb);
-            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_w, rho_b, l, (nz - 1) * delta_z, Z_b_down);
+        elseif   (nz - 1) * delta_z <= Z_b_down + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_down, ell, c_pw, c_pb);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_w, rho_b, ell, (nz - 1) * delta_z, Z_b_down);
         elseif   (nz - 1) * delta_z <= H_down
              n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
         else
              n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, (nz - 1) * delta_z, z_max, D);
         end
     end
-end
+
 
 
 %   information about the signal
@@ -172,8 +143,7 @@ P(:, 2) = p_psi(:, 2);
 %% DecLre the equations for MOM
 
 
-
-for m = 1 : 1 : N 
+for m = 1 : 1 : N               %Set Z value
     for n = 1 : 1 : N 
             if m - n == 1
                 Z_00(m, n) =  Z00_01;
@@ -238,122 +208,69 @@ end
 %%  error at receiver (nz = 199) at 7000m 
 
 %% Show the result
-
 figure
-Fig1 = pcolor(r, Z, TL);
-hold on 
-set(Fig1,'edgecolor','none');
-set(gca,'fontsize', 32,'ydir','reverse');
-xlabel('Range (m)');  
-ylabel('Depth (m)');
-caxis([0 160]);
-h=colorbar;
-set(get(h,'title'),'string','dB');
-colormap jet;
-
+Fig1 = PCOLOR_2D_MAGNITUDE(r, Z, TL, 'Range(m)','Depth(m)','dB', [0 160]);
 figure
-Fig2 = pcolor(r, Z,TL_P);
-hold on 
-set(Fig2,'edgecolor','none');
-set(gca,'fontsize', 32,'ydir','reverse');
-xlabel('Range(m)');  
-ylabel('Depth(m)');
-caxis([0 160]);
-h=colorbar;
-set(get(h,'title'),'string','dB');
-colormap jet;
-%{
+Fig2 = PCOLOR_2D_MAGNITUDE(r, Z, TL_P, 'Range(m)','Depth(m)','dB', [0 160]);
 figure
-Fig3 = pcolor(r, Z,TL_ref);
-hold on 
-set(Fig3,'edgecolor','none');
-set(gca,'fontsize', 32,'ydir','reverse');
-xlabel('Range(m)');  
-ylabel('Depth(m)');
-caxis([0 160]);
-h=colorbar;
-set(get(h,'title'),'string','dB');
-colormap jet;
-
-
-figure
-Fig3 = pcolor(r, Z,log10(abs(ux)));
-hold on 
-set(Fig3,'edgecolor','none');
-set(gca,'fontsize', 32,'ydir','reverse');
-xlabel('Range(m)');  
-ylabel('Depth(m)');
-%caxis([-4 4]);
-h=colorbar;
-%set(get(h,'title'),'string','dB');
-colormap jet;
-
-%}
-%{
-figure
-plot(Z, real(p_psi(:, 3)),'b', Z, real(p_w(:, 3)),'r');
-hold on 
-set(gca,'fontsize', 32);
-xlabel('depth(m)');  
-ylabel('Pressure(kg/m^2)');
-
-figure
-plot(Z, imag(p_psi(:, 3)),'--b', Z, imag(p_w(:, 3)),'--r');
-hold on 
-set(gca,'fontsize', 32);
-xlabel('depth(m)');  
-ylabel('Pressure(kg/m^2)');
-
-figure
-plot(Z, real(p_psi(:, 100)),'b', Z, real(p_w(:, 100)),'r');
-hold on 
-set(gca,'fontsize', 32);
-xlabel('depth(m)');  
-ylabel('Pressure(kg/m^2)');
-
-
-figure
-plot( Z, imag(p_psi(:, 100)),'--b', Z, imag(p_w(:, 100)),'--r');
-hold on 
-set(gca,'fontsize', 32);
-xlabel('depth(m)');  
-ylabel('Pressure(kg/m^2)');
-
-
-figure
-plot(real(P),'k');
-hold on 
-plot(imag(P),'--k');
-set(gca,'fontsize', 32);
-xlabel('k');  
-ylabel('d(k)');
-%}
-
-
-figure
-Fig6 = plot(real(DP_dia),'b');
-hold on 
-plot(imag(DP_dia),'r--')
-set(gca,'fontsize', 32);
-xlabel('k element');  
-ylabel('magnitude');
-%{
-
-figure
-Fig7 = pcolor(r, Z,log10(abs(ux_tran)));
-hold on 
-set(Fig7,'edgecolor','none');
-set(gca,'fontsize', 32,'ydir','reverse');
-xlabel('Range(m)');  
-ylabel('Depth(m)');
-%caxis([-4 4]);
-h=colorbar;
-%set(get(h,'title'),'string','dB');
-colormap jet;
-%}
+Fig3 =  PLOT_LINE(linspace(1, 800, 800), real(DP_dia), 'k element', 'magnitude', 'b');
 
 
 %% Sub functions define
+function  ONE_DIM_VALUE = SET_VALUE_ON_STRAIGHT_LINE(STARTING_POINT, STEP, NUMBER_OF_GRID, INTERFACE_POSITION, HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE)   %Set value along a straight line
+    for conter = 1 : 1 : NUMBER_OF_GRID
+       if conter * STEP - STARTING_POINT <= INTERFACE_POSITION(1) - HALF_LENGTH_OF_APPROXIMATION_REGION
+           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(1);
+       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(1) + HALF_LENGTH_OF_APPROXIMATION_REGION
+           ONE_DIM_VALUE(conter) = density(conter * STEP - STARTING_POINT, INTERFACE_POSITION(1), 2 * HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE(1), ORIGINAL_VALUE(2));
+       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(2) - HALF_LENGTH_OF_APPROXIMATION_REGION
+           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(2);
+       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(2) + HALF_LENGTH_OF_APPROXIMATION_REGION
+           ONE_DIM_VALUE(conter) = density(conter * STEP - STARTING_POINT, INTERFACE_POSITION(2), 2 * HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE(2), ORIGINAL_VALUE(1));
+       else
+           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(1);
+       end
+    end
+end
+
+
+
+function Z_VALUE = SET_Z_VELUE(N, Z_RESULT_VALUE)   %Set Z's value
+    for m = 1 : 1 : N               %Set Z value
+        for n = 1 : 1 : N 
+            for t = 1 : 1 :3
+                if m - n == 1
+                    Z_VALUE(m, n, t) =  Z_RESULT_VALUE(1, t);
+                elseif m - n == 0
+                	Z_VALUE(m, n, t) =  Z_RESULT_VALUE(2, t);
+                elseif m - n == -1
+                	Z_VALUE(m, n, t) =  Z_RESULT_VALUE(3, t);
+                end
+            end
+        end
+    end
+end
+
+function PICTURE = PCOLOR_2D_MAGNITUDE(X_AXIS_VARIABLE, Y_AXIS_VARIABLE, MAGNITUDE, X_LABEL, Y_LABEL, COLORBAR_TITLE, CAXIS) % Function of being set pcolor
+PICTURE = pcolor(X_AXIS_VARIABLE, Y_AXIS_VARIABLE,MAGNITUDE);  %plot figure which shows 2D magnitude 
+hold on                                     %Add set down
+set(PICTURE,'edgecolor','none');            %Set the grid line unvisible
+set(gca,'fontsize', 32,'ydir','reverse');   %Set font size as 32, reverse y direction
+set(get(colorbar,'title'),'string',COLORBAR_TITLE);%Set title of colorbar
+colormap jet;                               %Set type of colormap
+caxis(CAXIS);                               %Set the minimun and maximun of colorbar
+xlabel(X_LABEL);                            %Set label on y-axis
+ylabel(Y_LABEL);                            %Set label on x-axis
+end
+
+function PICTURE = PLOT_LINE(X_AXIS_VARIABLE, Y_AXIS_VARIABLE, X_LABEL, Y_LABEL, COLOR_of_LINE) % Function of of being set plot 
+PICTURE = plot(X_AXIS_VARIABLE, Y_AXIS_VARIABLE,COLOR_of_LINE); %plot figure which shows 1D magnitude
+hold on                         %Add set down
+set(gca,'fontsize', 32);        %Set font size as 32
+xlabel(X_LABEL);                %Set label on y-axis
+ylabel(Y_LABEL);                %Set label on x-axis
+end
+
 function rho = density(z, ZB, L, rho1, rho2)
 rho = 0.5 * (rho1 + rho2) + 0.5 * (rho2 - rho1) * tanh((z - ZB) / L) ;
 end
