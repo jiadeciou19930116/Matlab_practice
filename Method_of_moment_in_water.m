@@ -66,8 +66,8 @@ kz = linspace(- delta_kz * (N / 2 - 1), delta_kz * N / 2, N);
 
 
 
-rho = SET_VALUE_ON_STRAIGHT_LINE(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [rho_b rho_w]);
-c_p = SET_VALUE_ON_STRAIGHT_LINE(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [c_pb c_pw]);
+rho = CREATE_A_VECTOR(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [rho_b rho_w]);
+c_p = CREATE_A_VECTOR(0, delta_z, N, [Z_b_up Z_b_down], ell/2, [c_pb c_pw]);
 lambda = rho .* c_p.^2 ;                          % the shear wave modules
 
 
@@ -217,21 +217,62 @@ Fig3 =  PLOT_LINE(linspace(1, 800, 800), real(DP_dia), 'k element', 'magnitude',
 
 
 %% Sub functions define
-function  ONE_DIM_VALUE = SET_VALUE_ON_STRAIGHT_LINE(STARTING_POINT, STEP, NUMBER_OF_GRID, INTERFACE_POSITION, HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE)   %Set value along a straight line
-    for conter = 1 : 1 : NUMBER_OF_GRID
-       if conter * STEP - STARTING_POINT <= INTERFACE_POSITION(1) - HALF_LENGTH_OF_APPROXIMATION_REGION
-           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(1);
-       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(1) + HALF_LENGTH_OF_APPROXIMATION_REGION
-           ONE_DIM_VALUE(conter) = density(conter * STEP - STARTING_POINT, INTERFACE_POSITION(1), 2 * HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE(1), ORIGINAL_VALUE(2));
-       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(2) - HALF_LENGTH_OF_APPROXIMATION_REGION
-           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(2);
-       elseif conter * STEP - STARTING_POINT <= INTERFACE_POSITION(2) + HALF_LENGTH_OF_APPROXIMATION_REGION
-           ONE_DIM_VALUE(conter) = density(conter * STEP - STARTING_POINT, INTERFACE_POSITION(2), 2 * HALF_LENGTH_OF_APPROXIMATION_REGION, ORIGINAL_VALUE(2), ORIGINAL_VALUE(1));
+% 產生一個一維向量的數列
+function  vector = CREATE_A_VECTOR(startPoint, step, numberOfGrid, interfacePosition, halfLenOfApproxiRegion, oValue)   %Set value along a straight line
+    for idx = 1 : 1 : numberOfGrid
+       location = idx * step - startPoint;
+       
+       % for each interface, find the minimum value
+       for iIdx = 1 : 1 : numOfInterface
+           
+           % list of COND & OP
+           for counter = 1 : 1: numOfCondtions
+               if location <= condition(interface, i)
+                   vector(idx) = OPI(interface, i)
+                   break;
+                   
+           if location <= COND0(..., interface...)
+               vector(idx) = OP0(...)
+           elseif location <= COND1(...)
+               vector(idx) = OP1(...)
+             .......
+             ......
+             ......
+   
+       if location <= interfacePosition(1) - halfLenOfApproxiRegion
+           vector(idx) = oValue(1);
+       elseif location <= interfacePosition(1) + halfLenOfApproxiRegion
+           vector(idx) = density(local, interfacePosition(1), 2 * halfLenOfApproxiRegion, oValue(1), oValue(2));
+       elseif location <= interfacePosition(2) - halfLenOfApproxiRegion
+           vector(idx) = oValue(2);
+       elseif location <= interfacePosition(2) + halfLenOfApproxiRegion
+           vector(idx) = density(local, interfacePosition(2), 2 * halfLenOfApproxiRegion, oValue(2), oValue(1));
        else
-           ONE_DIM_VALUE(conter) = ORIGINAL_VALUE(1);
+           vector(idx) = oValue(1);
        end
     end
 end
+
+
+    for nz = 1 :1 : N
+        if (nz - 1) * delta_z <= Thickness_ABL
+             n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, 0 ,(nz - 1) * delta_z, D);
+        elseif   (nz - 1) * delta_z <= Z_b_up - ell / 2
+             n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
+        elseif   (nz - 1) * delta_z <= Z_b_up + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_up, ell, c_pb, c_pw);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_b, rho_w, ell, (nz - 1) * delta_z, Z_b_up);
+        elseif (nz - 1) * delta_z <= Z_b_down - ell / 2
+            n2(nz) = 1;                 % index of refraction in water
+        elseif   (nz - 1) * delta_z <= Z_b_down + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_down, ell, c_pw, c_pb);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_w, rho_b, ell, (nz - 1) * delta_z, Z_b_down);
+        elseif   (nz - 1) * delta_z <= H_down
+             n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
+        else
+             n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, (nz - 1) * delta_z, z_max, D);
+        end
+    end
 
 
 
