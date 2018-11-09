@@ -220,21 +220,59 @@ Fig3 =  PLOT_LINE(linspace(1, 800, 800), real(DP_dia), 'k element', 'magnitude',
 % 產生一個一維向量的數列
 function  vector = CREATE_A_VECTOR(startPoint, step, numberOfGrid, interfacePosition, halfLenOfApproxiRegion, oValue)   %Set value along a straight line
     for idx = 1 : 1 : numberOfGrid
-       local = idx * step - startPoint;
+       location = idx * step - startPoint;
        
-       if local <= interfacePosition(1) - halfLenOfApproxiRegion
+       % for each interface, find the minimum value
+       for iIdx = 1 : 1 : numOfInterface
+           
+           % list of COND & OP
+           for counter = 1 : 1: numOfCondtions
+               if location <= condition(interface, i)
+                   vector(idx) = OPI(interface, i)
+                   break;
+                   
+           if location <= COND0(..., interface...)
+               vector(idx) = OP0(...)
+           elseif location <= COND1(...)
+               vector(idx) = OP1(...)
+             .......
+             ......
+             ......
+   
+       if location <= interfacePosition(1) - halfLenOfApproxiRegion
            vector(idx) = oValue(1);
-       elseif local <= interfacePosition(1) + halfLenOfApproxiRegion
+       elseif location <= interfacePosition(1) + halfLenOfApproxiRegion
            vector(idx) = density(local, interfacePosition(1), 2 * halfLenOfApproxiRegion, oValue(1), oValue(2));
-       elseif local <= interfacePosition(2) - halfLenOfApproxiRegion
+       elseif location <= interfacePosition(2) - halfLenOfApproxiRegion
            vector(idx) = oValue(2);
-       elseif local <= interfacePosition(2) + halfLenOfApproxiRegion
+       elseif location <= interfacePosition(2) + halfLenOfApproxiRegion
            vector(idx) = density(local, interfacePosition(2), 2 * halfLenOfApproxiRegion, oValue(2), oValue(1));
        else
            vector(idx) = oValue(1);
        end
     end
 end
+
+
+    for nz = 1 :1 : N
+        if (nz - 1) * delta_z <= Thickness_ABL
+             n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, 0 ,(nz - 1) * delta_z, D);
+        elseif   (nz - 1) * delta_z <= Z_b_up - ell / 2
+             n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
+        elseif   (nz - 1) * delta_z <= Z_b_up + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_up, ell, c_pb, c_pw);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_b, rho_w, ell, (nz - 1) * delta_z, Z_b_up);
+        elseif (nz - 1) * delta_z <= Z_b_down - ell / 2
+            n2(nz) = 1;                 % index of refraction in water
+        elseif   (nz - 1) * delta_z <= Z_b_down + ell / 2 
+            c = density((nz - 1) * delta_z, Z_b_down, ell, c_pw, c_pb);
+            n2(nz) =  n_AT_INTERFACE(c_pw, c, k0, rho(nz), rho_w, rho_b, ell, (nz - 1) * delta_z, Z_b_down);
+        elseif   (nz - 1) * delta_z <= H_down
+             n2(nz) = ((c_pw / c_pb)^2 * (1 + 1i * beta_b / 27.29));    % index of refraction in bottom
+        else
+             n2(nz) = ABL_ATT_bottom(c_pw, c_pb, beta_b, (nz - 1) * delta_z, z_max, D);
+        end
+    end
 
 
 
